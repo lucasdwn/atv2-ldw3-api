@@ -59,6 +59,20 @@ class UsuarioController {
             return res.status(500).json({ message: 'Erro ao listar usuários', error: error.message });
         }
     };
+
+    public async getUsuarioById(req: Request, res: Response): Promise<Response> {
+        try {
+            const { userId } = req.params;
+            const usuario = await Usuario.findById(userId);
+
+            if (!usuario) {
+                return res.status(404).json({ erro: 'Usuário não encontrado' });
+            }
+            return res.status(200).json(usuario);
+        } catch (error) {
+            return res.status(500).json({ erro: 'Erro ao buscar informações do usuário' });
+        }
+    }
 };
 
 
