@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import Usuario from '../models/usuarioModel';
 import criptografia from '../utils/criptografia';
 import { generateRefreshToken, generateToken } from './authController';
+import dateService from '../utils/dateService';
 
 class UsuarioController {
 
@@ -33,7 +34,7 @@ class UsuarioController {
                 nome,
                 email,
                 senha: senhaCriptografada,
-                criadoEm: new Date(),
+                criadoEm: await dateService.getServiceDate(),
             });
 
             const usuarioSalvo = await novoUsuario.save();
@@ -99,7 +100,7 @@ class UsuarioController {
 
             usuario.nome = nome || usuario.nome;
             usuario.email = email || usuario.email;
-            usuario.atualizadoEm = new Date();
+            usuario.atualizadoEm = await dateService.getServiceDate();
 
             await usuario.save();
 
