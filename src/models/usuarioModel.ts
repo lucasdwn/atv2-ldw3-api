@@ -1,15 +1,10 @@
-import mongoose, { Schema, Document } from 'mongoose';
+import mongoose, { Schema } from 'mongoose';
+import { IUsuarioModal } from '../interfaces/IUsuario';
 
-export interface IUsuario extends Document {
-    nome: string;
-    email: string;
-    senha: string;
-    criadoEm: Date;
-    atualizadoEm?: Date;
-}
 
-const usuarioSchema: Schema = new Schema({
+const usuarioSchema = new Schema<IUsuarioModal>({
     nome: { type: String, required: [true, "o campo 'nome' é obrigatório"] },
+    profileImage: { type: String, required: false },
     email: {
         type: String,
         required: [true, "O campo 'e-mail' é obrigatório"],
@@ -33,6 +28,6 @@ usuarioSchema.method('toJSON', function () {
     return object;
 });
 
-const Usuario = mongoose.model<IUsuario>('Usuario', usuarioSchema, 'Usuarios');
+const Usuario = mongoose.model<IUsuarioModal>('Usuario', usuarioSchema, 'Usuarios');
 
 export default Usuario;

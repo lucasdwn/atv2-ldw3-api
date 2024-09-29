@@ -98,9 +98,12 @@ class UsuarioController {
                 }
             }
 
+            const profileImageUrl = req.file?.path;
+            
             usuario.nome = nome || usuario.nome;
             usuario.email = email || usuario.email;
             usuario.atualizadoEm = await dateService.getServiceDate();
+            usuario.profileImage = profileImageUrl || usuario.profileImage;
 
             await usuario.save();
 
