@@ -1,81 +1,65 @@
-import { v2 as cloudinary } from 'cloudinary';
-import { CloudinaryStorage } from 'multer-storage-cloudinary';
 import multer from 'multer';
-import dotenv from 'dotenv';
-import { NextFunction, Request, Response } from 'express';
+import { Request, Response, NextFunction } from 'express';
 
-dotenv.config();
+const IMAGE_SIZE_LIMIT = 5 * 1024 * 1024;
+const DOCUMENT_SIZE_LIMIT = 10 * 1024 * 1024;
 
-cloudinary.config({
-    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-    api_key: process.env.CLOUDINARY_API_KEY,
-    api_secret: process.env.CLOUDINARY_API_SECRET,
+const imageFileFilter = (req: Request, file: Express.Multer.File, cb: multer.FileFilterCallback) => {
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
+    if (allowedTypes.includes(file.mimetype)) {
+        cb(null, true);
+    } else {
+        cb(new Error('Invalid image type. Only JPEG, PNG, and GIF are allowed.'));
+    }
+};
+
+const documentFileFilter = (req: Request, file: Express.Multer.File, cb: multer.FileFilterCallback) => {
+    const allowedTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+    if (allowedTypes.includes(file.mimetype)) {
+        cb(null, true);
+    } else {
+        cb(new Error('Invalid document type. Only PDF, DOC, and DOCX are allowed.'));
+    }
+};
+
+const multerStorage = multer.memoryStorage();
+
+const imageUpload = multer({
+    storage: multerStorage,
+    limits: { fileSize: IMAGE_SIZE_LIMIT },
+    fileFilter: imageFileFilter
 });
 
-const documentStorage = new CloudinaryStorage({
-    cloudinary: cloudinary,
-    params: async (req: Request, file: Express.Multer.File) => {
-        return {
-            folder: 'documents',  
-            resource_type: 'raw', 
-            public_id: `${Date.now()}-${file.originalname}`, 
-        };
-    },
+const documentUpload = multer({
+    storage: multerStorage,
+    limits: { fileSize: DOCUMENT_SIZE_LIMIT },
+    fileFilter: documentFileFilter
 });
 
-const imageStorage = new CloudinaryStorage({
-    cloudinary: cloudinary,
-    params: async (req: Request, file: Express.Multer.File) => {
-        return {
-            folder: 'images',    
-            format: 'png',       
-            public_id: `${Date.now()}-${file.originalname}`, 
-        };
-    },
-});
+const preserveBody = (type: 'image' | 'document') => {
+    return (req: Request, res: Response, next: NextFunction) => {
+        const originalBody = { ...req.body }; 
 
-export const uploadDocument = multer({
-    storage: documentStorage,
-    limits: { fileSize: 10 * 1024 * 1024 }, 
-    fileFilter: (req, file, cb) => {
-        cb(null, true);  
-    },
-}).single('document');
-
-export const uploadImage = multer({
-    storage: imageStorage,
-    limits: { fileSize: 5 * 1024 * 1024 }, 
-    fileFilter: (req, file, cb) => {
-        if (file.mimetype.startsWith('image/')) {
-            cb(null, true);  
+        if (type === 'image') {
+            imageUpload.single('image')(req, res, (err: any) => {
+                if (err) {
+                    return res.status(400).json({ message: err.message });
+                }
+                req.body = { ...originalBody, ...req.body }; 
+                next();
+            });
+        } else if (type === 'document') {
+            documentUpload.single('document')(req, res, (err: any) => {
+                if (err) {
+                    return res.status(400).json({ message: err.message });
+                }
+                req.body = { ...originalBody, ...req.body }; 
+                next();
+            });
         } else {
-            cb(null, false)
-            cb(new Error('Por favor, envie apenas imagens!')); 
+            return res.status(400).json({ message: 'Invalid upload type' });
         }
-    },
-}).single('profileImage');
-
-
-export const uploadWithUserIdPreservedImage = (req: Request, res: Response, next: NextFunction) => {
-    const userId = req.body.userId; 
-
-    uploadImage(req, res, (err) => {
-        if (err) {
-            return res.status(400).json({ message: err.message });
-        }
-        req.body.userId = userId;
-        next();
-    });
+    };
 };
 
-export const uploadWithUserIdPreservedDocument = (req: Request, res: Response, next: NextFunction) => {
-    const userId = req.body.userId; 
-
-    uploadDocument(req, res, (err) => {
-        if (err) {
-            return res.status(400).json({ message: err.message });
-        }
-        req.body.userId = userId;
-        next();
-    });
-};
+export { preserveBody };

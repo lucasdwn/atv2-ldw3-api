@@ -3,6 +3,8 @@ import Usuario from '../models/usuarioModel';
 import criptografia from '../utils/criptografia';
 import { generateRefreshToken, generateToken } from './authController';
 import dateService from '../utils/dateService';
+import { uploadToS3 } from '../utils/s3Upload';
+import { IUpload } from '../interfaces/IAnexo';
 
 class UsuarioController {
 
@@ -72,7 +74,6 @@ class UsuarioController {
     public async updateUsuario(req: Request, res: Response): Promise<Response> {
         try {
             const { nome, email, senha, userId } = req.body;
-
             const usuario = await Usuario.findById(userId);
 
             if (!usuario) {
@@ -98,12 +99,15 @@ class UsuarioController {
                 }
             }
 
-            const profileImageUrl = req.file?.path;
-            
+            let profileImageUrl: IUpload | undefined;
+            if (req.file) {
+                profileImageUrl = await uploadToS3(req.file, 'profile-images');
+            }
+
             usuario.nome = nome || usuario.nome;
             usuario.email = email || usuario.email;
             usuario.atualizadoEm = await dateService.getServiceDate();
-            usuario.profileImage = profileImageUrl || usuario.profileImage;
+            usuario.profileImage = profileImageUrl?.url || usuario.profileImage;
 
             await usuario.save();
 

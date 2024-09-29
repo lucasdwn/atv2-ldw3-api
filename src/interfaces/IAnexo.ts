@@ -1,8 +1,12 @@
-export interface IAnexo {
+export interface IAnexo extends IUpload {
     usuarioId: string;
     tarefaId?: string;
-    url: string;
     criadoEm: Date;
+}
+
+export interface IUpload {
+    url: string;
+    originalFilename: string;
 }
 
 import { Document } from 'mongoose';
