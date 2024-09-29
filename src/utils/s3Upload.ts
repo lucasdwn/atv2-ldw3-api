@@ -14,14 +14,18 @@ export const uploadToS3 = async (file: Express.Multer.File, folder: string) => {
         Key: `${folder}/${newFileName}`,
         Body: file.buffer,
         ContentType: file.mimetype,
-        ACL: 'public-read' as ObjectCannedACL
+        ACL: 'private' as ObjectCannedACL
     };
 
     const command = new PutObjectCommand(uploadParams);
     await s3.send(command);
 
+    const urlCDN = process.env.CLOUD_FRONT_CDN;
+    const awsUrl = `https://${process.env.S3_BUCKET_NAME}.s3.amazonaws.com`
+    const baseUrl = urlCDN ? urlCDN : awsUrl;
+
     return {
-        url: `https://${process.env.S3_BUCKET_NAME}.s3.amazonaws.com/${uploadParams.Key}`,
+        url: `${baseUrl}/${uploadParams.Key}`,
         originalFilename: file.originalname
     };
 };
