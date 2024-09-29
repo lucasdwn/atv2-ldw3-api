@@ -1,7 +1,7 @@
 import { v2 as cloudinary } from 'cloudinary';
-import { CloudinaryStorage } from 'multer-storage-cloudinary';
 import multer from 'multer';
 import dotenv from 'dotenv';
+import sharp from 'sharp';
 import { NextFunction, Request, Response } from 'express';
 
 dotenv.config();
@@ -12,70 +12,74 @@ cloudinary.config({
     api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-const documentStorage = new CloudinaryStorage({
-    cloudinary: cloudinary,
-    params: async (req: Request, file: Express.Multer.File) => {
-        return {
-            folder: 'documents',  
-            resource_type: 'raw', 
-            public_id: `${Date.now()}-${file.originalname}`, 
-        };
-    },
+const upload = multer({
+    storage: multer.memoryStorage(), 
+    limits: { fileSize: 20 * 1024 * 1024 }, 
 });
 
-const imageStorage = new CloudinaryStorage({
-    cloudinary: cloudinary,
-    params: async (req: Request, file: Express.Multer.File) => {
-        return {
-            folder: 'images',    
-            format: 'png',       
-            public_id: `${Date.now()}-${file.originalname}`, 
-        };
-    },
-});
+const compressAndUploadImage = async (req: Request, res: Response, next: NextFunction) => {
+    if (!req.file) {
+        return res.status(400).json({ message: 'Nenhum arquivo encontrado!' });
+    }
 
-export const uploadDocument = multer({
-    storage: documentStorage,
-    limits: { fileSize: 10 * 1024 * 1024 }, 
-    fileFilter: (req, file, cb) => {
-        cb(null, true);  
-    },
-}).single('document');
+    try {
+        const compressedBuffer = await sharp(req.file.buffer)
+            .resize(1024, 1024, { fit: 'inside' }) 
+            .png({ quality: 80 })  
+            .toBuffer();
 
-export const uploadImage = multer({
-    storage: imageStorage,
-    limits: { fileSize: 5 * 1024 * 1024 }, 
-    fileFilter: (req, file, cb) => {
-        if (file.mimetype.startsWith('image/')) {
-            cb(null, true);  
-        } else {
-            cb(null, false)
-            cb(new Error('Por favor, envie apenas imagens!')); 
-        }
-    },
-}).single('profileImage');
+        const result = await new Promise<any>((resolve, reject) => {
+            const uploadStream = cloudinary.uploader.upload_stream(
+                { folder: 'images', format: 'png' },
+                (error, result) => {
+                    if (error) {
+                        reject(error);
+                    } else {
+                        resolve(result);
+                    }
+                }
+            );
+
+            uploadStream.end(compressedBuffer); 
+        });
+
+        req.file.path = result.secure_url; 
+        next();  
+
+    } catch (error) {
+        return res.status(500).json({ message: 'Erro ao comprimir e enviar a imagem' });
+    }
+};
 
 
 export const uploadWithUserIdPreservedImage = (req: Request, res: Response, next: NextFunction) => {
     const userId = req.body.userId; 
+    console.log(userId)
 
-    uploadImage(req, res, (err) => {
+    upload.single('profileImage')(req, res, (err) => {
         if (err) {
             return res.status(400).json({ message: err.message });
         }
-        req.body.userId = userId;
-        next();
+
+        compressAndUploadImage(req, res, (err) => {
+            if (err) {
+                return res.status(500).json({ message: 'Erro ao fazer upload com compressão' });
+            }
+            req.body.userId = userId;
+            next();
+        });
     });
 };
 
 export const uploadWithUserIdPreservedDocument = (req: Request, res: Response, next: NextFunction) => {
     const userId = req.body.userId; 
 
-    uploadDocument(req, res, (err) => {
+    upload.single('document')(req, res, (err) => {
         if (err) {
             return res.status(400).json({ message: err.message });
         }
-        req.body.userId = userId;
+
+        req.body.userId = userId; 
         next();
     });
 };
