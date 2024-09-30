@@ -93,10 +93,10 @@ class listaClass {
     public async updateLista(req: Request, res: Response): Promise<Response> {
 
         try {
-            const { listaID } = req.params;
+            const { listaId } = req.params;
             const { userId, nome, personalizacao, usuariosPermitidos } = req.body;
 
-            const lista = await Lista.findById(listaID)
+            const lista = await Lista.findById(listaId)
             if (!lista) {
                 return res.status(404).json({ message: 'Lista não encontrada' });
             }
@@ -149,10 +149,10 @@ class listaClass {
     public async deleteLista(req: Request, res: Response): Promise<Response> {
 
         try {
-            const { listaID } = req.params;
+            const { listaId } = req.params;
             const { userId } = req.body;
 
-            const lista = await Lista.findById(listaID)
+            const lista = await Lista.findById(listaId)
             if (!lista) {
                 return res.status(404).json({ message: 'Lista não encontrada' });
             }
@@ -168,7 +168,7 @@ class listaClass {
             }
 
 
-            await Lista.deleteOne({ _id: listaID })
+            await Lista.deleteOne({ _id: listaId })
 
             return res.status(200).json({ message: 'Lista removida com sucesso' });
         }
@@ -177,6 +177,37 @@ class listaClass {
         }
     };
 
+    public async buscarLista(req: Request, res: Response): Promise<Response> {
+        try {
+            const { userId } = req.body;
+            const { listaId } = req.params;
+
+            const usuario = await Usuario.findById(userId);
+
+            if (!usuario) {
+                return res.status(404).json({ message: 'Usuário não encontrado' });
+            }
+
+            const lista = await Lista.findById(listaId);
+
+            if (!lista) {
+                return res.status(404).json({ message: 'Lista não encontrada' });
+            }
+
+            const usuariosComPermissaoDeEdicao = lista.usuariosPermitidos
+                .filter(usuario => usuario.podeEditar === true)
+                .map(usuario => usuario.usuarioId);
+
+            if (lista.usuarioId !== userId && !usuariosComPermissaoDeEdicao.includes(userId)) {
+                return res.status(404).json({ message: 'Você não possuí permissão para visualizar essa lista.' });
+            }
+
+
+            return res.status(200).json(lista);
+        } catch (error: any) {
+            return res.status(500).json({ message: 'Erro ao buscar lista', error: error.message });
+        }
+    };
 };
 
 export default new listaClass();
