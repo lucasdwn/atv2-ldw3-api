@@ -3,7 +3,6 @@ import { StatusEnum } from "../enums/tarefasEnum";
 import { ISubTarefaModal, ITarefaModal } from "../interfaces/ITarefa";
 import { anexoSchema } from "./anexoModel";
 import { PersonalizacaoSchema } from "./personalizacaoModel";
-import { prioridadeSchema } from "./prioridadeModel";
 
 const SubTarefaSchema = new Schema<ISubTarefaModal>({
     titulo: { type: String, required: [true, "o campo 'Titulo' é obrigatório"] },
@@ -24,7 +23,7 @@ export const TarefaSchema = new Schema<ITarefaModal>({
     titulo: { type: String, required: [true, "o campo 'Titulo' é obrigatório"] },
     descricao: { type: String, required: false },
     ordenacao: { type: Number, required: false },
-    prioridade: { type: prioridadeSchema, required: [true, "o campo 'Prioridade' é obrigatório"] },
+    prioridadeId: { type: String, required: [true, "o campo 'Prioridade' é obrigatório"] },
     status: { type: String, enum: Object.values(StatusEnum), required: true },
     subTarefas: [SubTarefaSchema],
     anexos: [anexoSchema],

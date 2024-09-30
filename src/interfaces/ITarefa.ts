@@ -1,13 +1,12 @@
 import { StatusEnum } from "../enums/tarefasEnum";
 import { IAnexo } from "./IAnexo";
 import { IPersonalizacao } from "./IPersonalizacao";
-import { IPrioridade } from "./IPrioridade";
 
 export interface ITarefa {
     titulo: string;
     descricao: string;
     ordenacao: number;
-    prioridade: IPrioridade;
+    prioridadeId: string;
     status: StatusEnum;
     subTarefas: ISubTarefa[];
     anexos: IAnexo[];
