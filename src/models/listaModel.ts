@@ -1,7 +1,6 @@
 import mongoose, { Schema } from 'mongoose';
 import { IListaModal } from '../interfaces/ILista';
 import { PersonalizacaoSchema } from './personalizacaoModel';
-import { TarefaSchema } from './tarefaModel';
 import { UsuarioPermitidoSchema } from './usuarioModel';
 
 
@@ -9,7 +8,6 @@ import { UsuarioPermitidoSchema } from './usuarioModel';
 const ListaSchema = new Schema<IListaModal>({
     usuarioId: { type: String, required: [true, "o campo 'Usuario' é obrigatório"] },
     nome: { type: String, required: [true, "o campo 'Nome' é obrigatório"] },
-    tarefas: [TarefaSchema],
     usuariosPermitidos: [UsuarioPermitidoSchema],
     criadoEm: { type: Date, default: Date.now },
     personalizacao: PersonalizacaoSchema,
@@ -23,4 +21,6 @@ ListaSchema.method('toJSON', function () {
 
 
 
-export const ListaModel = mongoose.model<IListaModal>('Lista', ListaSchema, 'Listas');
+const Lista = mongoose.model<IListaModal>('Lista', ListaSchema, 'Listas');
+
+export default Lista;

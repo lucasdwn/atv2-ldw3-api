@@ -3,6 +3,7 @@ import { IAnexo } from "./IAnexo";
 import { IPersonalizacao } from "./IPersonalizacao";
 
 export interface ITarefa {
+    listaId: string;
     titulo: string;
     descricao: string;
     ordenacao: number;

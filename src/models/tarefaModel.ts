@@ -1,4 +1,4 @@
-import { Schema } from "mongoose";
+import mongoose, { Schema } from "mongoose";
 import { StatusEnum } from "../enums/tarefasEnum";
 import { ISubTarefaModal, ITarefaModal } from "../interfaces/ITarefa";
 import { anexoSchema } from "./anexoModel";
@@ -20,6 +20,7 @@ SubTarefaSchema.method('toJSON', function () {
 
 
 export const TarefaSchema = new Schema<ITarefaModal>({
+    listaId: { type: String, required: [true, "o campo 'Lista' é obrigatório"] },
     titulo: { type: String, required: [true, "o campo 'Titulo' é obrigatório"] },
     descricao: { type: String, required: false },
     ordenacao: { type: Number, required: false },
@@ -38,3 +39,5 @@ TarefaSchema.method('toJSON', function () {
     object.id = _id;
     return object;
 });
+
+export const TarefaModel = mongoose.model<ITarefaModal>('Tarefa', TarefaSchema, 'Tarefas');

@@ -1,15 +1,20 @@
+import dateService from "../utils/dateService";
 import { IPersonalizacao } from "./IPersonalizacao";
-import { ITarefa } from "./ITarefa";
 import { IUsuarioPermitido } from "./IUsuario";
 
 export interface ILista {
-    usuarioId?: string;
+    usuarioId: string;
     nome: string;
-    tarefas: ITarefa[];
     usuariosPermitidos: IUsuarioPermitido[];
     criadoEm: Date;
     personalizacao: IPersonalizacao;
 }
+
+export const personalizacaoPredefinidaLista: IPersonalizacao = {
+    icone: '📃',
+    cor: '#B0BEC5',
+    criadoEm: dateService.getServiceDate()
+};
 
 import { Document } from 'mongoose';
 export interface IListaModal extends Document, ILista { }

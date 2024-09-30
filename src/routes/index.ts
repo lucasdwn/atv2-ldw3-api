@@ -4,9 +4,11 @@ import authRoutes from "./authRoutes";
 import uploadRoutes from "./uploadRoutes";
 import authMiddleware from "../middlewares/authMiddleware";
 import prioridadeRoutes from "./prioridadeRoutes";
+import listaRoutes from "./listaRoutes"
 
 const routes = Router()
 
+routes.use('/lista', authMiddleware, listaRoutes)
 routes.use('/prioridade', authMiddleware, prioridadeRoutes)
 routes.use('/upload', authMiddleware, uploadRoutes)
 routes.use('/usuario', usuarioRoutes)
