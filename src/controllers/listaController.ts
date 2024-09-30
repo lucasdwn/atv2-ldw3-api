@@ -66,7 +66,19 @@ class listaClass {
 
             const listas = await Lista.find({ usuarioId: userId });
 
-            return res.status(200).json(listas);
+            const listasTransformadas = listas.map((lista) => {
+                const listasObj = lista.toObject({
+                    versionKey: false,
+                    transform: (doc, ret) => {
+                        ret.id = ret._id;
+                        delete ret._id;
+                        return ret;
+                    }
+                });
+                return listasObj;
+            });
+
+            return res.status(200).json(listasTransformadas);
         } catch (error: any) {
             return res.status(500).json({ message: 'Erro ao buscar listas', error: error.message });
         }
@@ -84,7 +96,19 @@ class listaClass {
 
             const listas = await Lista.find({ "usuariosPermitidos.usuarioId": userId });
 
-            return res.status(200).json(listas);
+            const listasTransformadas = listas.map((lista) => {
+                const listasObj = lista.toObject({
+                    versionKey: false,
+                    transform: (doc, ret) => {
+                        ret.id = ret._id;
+                        delete ret._id;
+                        return ret;
+                    }
+                });
+                return listasObj;
+            });
+
+            return res.status(200).json(listasTransformadas);
         } catch (error: any) {
             return res.status(500).json({ message: 'Erro ao buscar listas compartilhadas', error: error.message });
         }
@@ -202,8 +226,16 @@ class listaClass {
                 return res.status(404).json({ message: 'Você não possuí permissão para visualizar essa lista.' });
             }
 
+            const listaObj = lista.toObject({
+                versionKey: false,
+                transform: (doc, ret) => {
+                    ret.id = ret._id;
+                    delete ret._id;
+                    return ret;
+                }
+            });
 
-            return res.status(200).json(lista);
+            return res.status(200).json(listaObj);
         } catch (error: any) {
             return res.status(500).json({ message: 'Erro ao buscar lista', error: error.message });
         }
