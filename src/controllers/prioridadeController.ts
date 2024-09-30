@@ -73,7 +73,7 @@ class prioridadeController {
 
             return res.status(200).json(listPrioridades);
         } catch (error: any) {
-            return res.status(500).json({ message: 'Erro ao listar usuários', error: error.message });
+            return res.status(500).json({ message: 'Erro ao listar prioridades', error: error.message });
         }
     };
 
@@ -122,9 +122,38 @@ class prioridadeController {
             });
         }
         catch (error: any) {
-            return res.status(500).json({ message: 'Erro ao criar prioridade', error: error.message });
+            return res.status(500).json({ message: 'Erro ao atualizar prioridade', error: error.message });
         }
     };
+
+    public async deletePrioridade(req: Request, res: Response): Promise<Response> {
+        try {
+            const { prioridadeId } = req.params;
+            const { userId } = req.body;
+
+            const prioridade = await Prioridade.findById(prioridadeId)
+
+            if (!prioridade) {
+                return res.status(404).json({ message: 'Prioridade não encontrada' });
+            }
+
+            const usuario = await Usuario.findById(userId);
+
+            if (!usuario) {
+                return res.status(404).json({ message: 'Usuário não encontrado' });
+            }
+
+            if (prioridade.usuarioId !== userId) {
+                return res.status(404).json({ message: 'Prioridade não pertence ao usuario' });
+            }
+
+            await Prioridade.deleteOne({ _id: prioridadeId })
+
+            return res.status(200).json({ message: 'Prioridade removida com sucesso' });
+        } catch (error: any) {
+            return res.status(500).json({ message: 'Erro ao deletar prioridade', error: error.message });
+        }
+    }
 
 };
 
