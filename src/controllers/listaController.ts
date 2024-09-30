@@ -90,6 +90,63 @@ class listaClass {
         }
     };
 
+    public async updateLista(req: Request, res: Response): Promise<Response> {
+
+        try {
+            const { listaID } = req.params;
+            const { userId, nome, personalizacao, usuariosPermitidos } = req.body;
+
+            const lista = await Lista.findById(listaID)
+            if (!lista) {
+                return res.status(404).json({ message: 'Lista não encontrada' });
+            }
+
+            const usuario = await Usuario.findById(userId);
+
+            if (!usuario) {
+                return res.status(404).json({ message: 'Usuário não encontrado' });
+            }
+
+            const usuariosComPermissaoDeEdicao = lista.usuariosPermitidos
+                .filter(usuario => usuario.podeEditar === true)
+                .map(usuario => usuario.usuarioId);
+              
+            console.log(usuariosComPermissaoDeEdicao)
+
+            if (lista.usuarioId !== userId && !usuariosComPermissaoDeEdicao.includes(userId)) {
+                return res.status(404).json({ message: 'Usuario não possuí permissão para editar lista' });
+            }
+
+            lista.nome = nome || lista.nome;
+            lista.personalizacao = personalizacao || lista.personalizacao;
+            lista.atualizadoEm = await dateService.getServiceDate();
+
+            if (lista.usuarioId === userId) {
+                lista.usuariosPermitidos = usuariosPermitidos || lista.usuariosPermitidos
+            }
+
+            await lista.save();
+
+
+            const listaObj = lista.toObject({
+                versionKey: false,
+                transform: (doc, ret) => {
+                    ret.id = ret._id;
+                    delete ret._id;
+                    return ret;
+                }
+            });
+
+            return res.status(201).json({
+                message: "Lista atualizada com sucesso",
+                lista: listaObj
+            });
+        }
+        catch (error: any) {
+            return res.status(500).json({ message: 'Erro ao atualizar lista', error: error.message });
+        }
+    };
+
 };
 
 export default new listaClass();

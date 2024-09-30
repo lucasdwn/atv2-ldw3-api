@@ -7,6 +7,7 @@ export interface ILista {
     nome: string;
     usuariosPermitidos: IUsuarioPermitido[];
     criadoEm: Date;
+    atualizadoEm?: Date;
     personalizacao: IPersonalizacao;
 }
 

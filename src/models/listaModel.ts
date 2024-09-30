@@ -10,6 +10,7 @@ const ListaSchema = new Schema<IListaModal>({
     nome: { type: String, required: [true, "o campo 'Nome' é obrigatório"] },
     usuariosPermitidos: [UsuarioPermitidoSchema],
     criadoEm: { type: Date, default: Date.now },
+    atualizadoEm: { type: Date },
     personalizacao: PersonalizacaoSchema,
 });
 
