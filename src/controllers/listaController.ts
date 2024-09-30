@@ -54,6 +54,42 @@ class listaClass {
         }
     }
 
+    public async buscarListasUser(req: Request, res: Response): Promise<Response> {
+        try {
+            const { userId } = req.body;
+
+            const usuario = await Usuario.findById(userId);
+
+            if (!usuario) {
+                return res.status(404).json({ message: 'Usuário não encontrado' });
+            }
+
+            const listas = await Lista.find({ usuarioId: userId });
+
+            return res.status(200).json(listas);
+        } catch (error: any) {
+            return res.status(500).json({ message: 'Erro ao buscar listas', error: error.message });
+        }
+    };
+
+    public async buscarListasCompartilhadasComUser(req: Request, res: Response): Promise<Response> {
+        try {
+            const { userId } = req.body;
+
+            const usuario = await Usuario.findById(userId);
+
+            if (!usuario) {
+                return res.status(404).json({ message: 'Usuário não encontrado' });
+            }
+
+            const listas = await Lista.find({ "usuariosPermitidos.usuarioId": userId });
+
+            return res.status(200).json(listas);
+        } catch (error: any) {
+            return res.status(500).json({ message: 'Erro ao buscar listas compartilhadas', error: error.message });
+        }
+    };
+
 };
 
 export default new listaClass();
