@@ -5,5 +5,6 @@ const routes = Router();
 
 routes.post('/', prioridadeController.createPrioridade);
 routes.get('/list', prioridadeController.listPrioridades);
+routes.put('/update/:prioridadeId', prioridadeController.updatePrioridade);
 
 export default routes;

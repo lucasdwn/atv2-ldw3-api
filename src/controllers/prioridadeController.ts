@@ -77,6 +77,55 @@ class prioridadeController {
         }
     };
 
+    public async updatePrioridade(req: Request, res: Response): Promise<Response> {
+
+        try {
+            const { prioridadeId } = req.params;
+            const { userId, nome, personalizacao } = req.body;
+
+            const prioridade = await Prioridade.findById(prioridadeId)
+
+            if (!prioridade) {
+                return res.status(404).json({ message: 'Prioridade não encontrada' });
+            }
+
+            const usuario = await Usuario.findById(userId);
+
+            if (!usuario) {
+                return res.status(404).json({ message: 'Usuário não encontrado' });
+            }
+
+            if (prioridade.usuarioId !== userId) {
+                return res.status(404).json({ message: 'Prioridade não pertence ao usuario' });
+            }
+
+
+            prioridade.nome = nome || prioridade.nome;
+            prioridade.personalizacao = personalizacao || prioridade.personalizacao;
+            prioridade.atualizadoEm = await dateService.getServiceDate();
+
+            await prioridade.save();
+
+
+            const prioridadeObj = prioridade.toObject({
+                versionKey: false,
+                transform: (doc, ret) => {
+                    ret.id = ret._id;
+                    delete ret._id;
+                    return ret;
+                }
+            });
+
+            return res.status(201).json({
+                message: "Prioridade atualizada com sucesso",
+                prioridade: prioridadeObj
+            });
+        }
+        catch (error: any) {
+            return res.status(500).json({ message: 'Erro ao criar prioridade', error: error.message });
+        }
+    };
+
 };
 
 export default new prioridadeController();
