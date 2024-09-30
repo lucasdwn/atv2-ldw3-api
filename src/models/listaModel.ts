@@ -1,4 +1,4 @@
-import mongoose, { Schema } from 'mongoose';
+import mongoose, { model, Schema } from 'mongoose';
 import { IListaModal } from '../interfaces/ILista';
 import { PersonalizacaoSchema } from './personalizacaoModel';
 import { UsuarioPermitidoSchema } from './usuarioModel';
@@ -20,8 +20,4 @@ ListaSchema.method('toJSON', function () {
     return object;
 });
 
-
-
-const Lista = mongoose.model<IListaModal>('Lista', ListaSchema, 'Listas');
-
-export default Lista;
+export default model<IListaModal>('Lista', ListaSchema, 'Listas');

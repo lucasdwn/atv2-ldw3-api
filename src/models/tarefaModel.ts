@@ -2,7 +2,6 @@ import mongoose, { Schema } from "mongoose";
 import { StatusEnum } from "../enums/tarefasEnum";
 import { ISubTarefaModal, ITarefaModal } from "../interfaces/ITarefa";
 import { anexoSchema } from "./anexoModel";
-import { PersonalizacaoSchema } from "./personalizacaoModel";
 
 const SubTarefaSchema = new Schema<ISubTarefaModal>({
     titulo: { type: String, required: [true, "o campo 'Titulo' é obrigatório"] },
@@ -30,8 +29,7 @@ export const TarefaSchema = new Schema<ITarefaModal>({
     anexos: [anexoSchema],
     dataDeVencimento: { type: Date, required: [true, "o campo 'Data de vencimento' é obrigatório"] },
     realizadoEm: { type: Date },
-    criadoEm: { type: Date, default: Date.now },
-    personalizacao: PersonalizacaoSchema,
+    criadoEm: { type: Date, default: Date.now }
 });
 
 TarefaSchema.method('toJSON', function () {
@@ -40,4 +38,6 @@ TarefaSchema.method('toJSON', function () {
     return object;
 });
 
-export const TarefaModel = mongoose.model<ITarefaModal>('Tarefa', TarefaSchema, 'Tarefas');
+const Tarefa = mongoose.model<ITarefaModal>('Tarefa', TarefaSchema, 'Tarefas');
+
+export default Tarefa;

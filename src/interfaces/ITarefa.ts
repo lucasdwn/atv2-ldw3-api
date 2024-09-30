@@ -14,7 +14,6 @@ export interface ITarefa {
     dataDeVencimento: Date;
     realizadoEm: Date;
     criadoEm: Date;
-    personalizacao: IPersonalizacao;
 }
 
 export interface ISubTarefa {
