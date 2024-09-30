@@ -86,7 +86,48 @@ class tarefaClass {
             console.log(error.message)
             return res.status(500).json({ message: 'Erro ao criar lista', error: error.message })
         }
-    }
+    };
+
+    public async buscarTarefas(req: Request, res: Response): Promise<Response> {
+        try {
+            const { userId } = req.body;
+            const { listaId } = req.query;
+
+            const usuario = await Usuario.findById(userId);
+
+            if (!usuario) {
+                return res.status(404).json({ message: 'Usuário não encontrado' });
+            };
+
+            if (!listaId || listaId === '') {
+                return res.status(400).json({ message: 'Lista é obrigatória.' });
+            };
+
+            const lista = await Lista.findById(listaId);
+
+            if (!lista) {
+                return res.status(404).json({ message: 'Lista não encontrada' });
+            };
+
+            const usuariosComPermissaoDeEdicao = lista.usuariosPermitidos
+                .filter(usuario => usuario.podeEditar === true)
+                .map(usuario => usuario.usuarioId);
+
+            if (lista.usuarioId !== userId && !usuariosComPermissaoDeEdicao.includes(userId)) {
+                return res.status(404).json({ message: 'Você não possuí permissão para visualizar tarefas dessa lista.' });
+            }
+
+            const tarefas = await Tarefa.find({ listaId: listaId }).populate({
+                path: 'prioridadeId',
+                model: 'Prioridade',
+                select: 'nome usuarioId personalizacao'
+            });
+
+            return res.status(200).json(tarefas);
+        } catch (error: any) {
+            return res.status(500).json({ message: 'Erro ao buscar tarefas', error: error.message });
+        }
+    };
 
 };
 

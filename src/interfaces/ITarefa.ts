@@ -1,6 +1,5 @@
 import { StatusEnum } from "../enums/tarefasEnum";
 import { IAnexo } from "./IAnexo";
-import { IPersonalizacao } from "./IPersonalizacao";
 
 export interface ITarefa {
     listaId: string;
