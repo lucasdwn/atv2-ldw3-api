@@ -1,5 +1,5 @@
 import mongoose, { Schema } from 'mongoose';
-import { IUsuarioModal } from '../interfaces/IUsuario';
+import { IUsuarioModal, IUsuarioPermitidoModal } from '../interfaces/IUsuario';
 
 
 const usuarioSchema = new Schema<IUsuarioModal>({
@@ -27,6 +27,20 @@ usuarioSchema.method('toJSON', function () {
     object.id = _id;
     return object;
 });
+
+export const UsuarioPermitidoSchema = new Schema<IUsuarioPermitidoModal>({
+    usuarioId: { type: String, required: true },
+    podeEditar: { type: Boolean, required: true },
+    criadoEm: { type: Date, default: Date.now },
+    atualizadoEm: { type: Date },
+});
+
+UsuarioPermitidoSchema.method('toJSON', function () {
+    const { _id, __v, ...object } = this.toObject();
+    object.id = _id;
+    return object;
+});
+
 
 const Usuario = mongoose.model<IUsuarioModal>('Usuario', usuarioSchema, 'Usuarios');
 

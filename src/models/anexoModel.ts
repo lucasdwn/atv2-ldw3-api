@@ -2,7 +2,7 @@ import { Schema, model } from 'mongoose';
 import { IAnexoModal } from '../interfaces/IAnexo';
 
 
-const anexoSchema = new Schema<IAnexoModal>({
+export const anexoSchema = new Schema<IAnexoModal>({
     usuarioId: { type: String, required: true },
     tarefaId: { type: String, required: false },
     originalFilename: { type: String, required: true },

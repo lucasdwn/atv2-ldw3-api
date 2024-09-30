@@ -3,7 +3,6 @@ import { ITarefa } from "./ITarefa";
 import { IUsuarioPermitido } from "./IUsuario";
 
 export interface ILista {
-    id?: string;
     usuarioId?: string;
     nome: string;
     tarefas: ITarefa[];
@@ -11,3 +10,6 @@ export interface ILista {
     criadoEm: Date;
     personalizacao: IPersonalizacao;
 }
+
+import { Document } from 'mongoose';
+export interface IListaModal extends Document, ILista { }

@@ -8,7 +8,6 @@ export interface IUsuario {
 }
 
 export interface IUsuarioPermitido {
-    id?: string;
     usuarioId: string;
     podeEditar: boolean;
     criadoEm: Date;
@@ -17,3 +16,4 @@ export interface IUsuarioPermitido {
 
 import { Document } from 'mongoose';
 export interface IUsuarioModal extends Document, IUsuario { }
+export interface IUsuarioPermitidoModal extends Document, IUsuarioPermitido { }

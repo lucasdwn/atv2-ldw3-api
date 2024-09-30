@@ -4,7 +4,6 @@ import { IPersonalizacao } from "./IPersonalizacao";
 import { IPrioridade } from "./IPrioridade";
 
 export interface ITarefa {
-    id?: string;
     titulo: string;
     descricao: string;
     ordenacao: number;
@@ -19,10 +18,13 @@ export interface ITarefa {
 }
 
 export interface ISubTarefa {
-    id?: string;
     titulo: string;
     descricao: string;
     ordenacao: number;
     criadoEm: Date;
     isFinalizada: boolean;
 }
+
+import { Document } from 'mongoose';
+export interface ITarefaModal extends Document, ITarefa { }
+export interface ISubTarefaModal extends Document, ISubTarefa { }
