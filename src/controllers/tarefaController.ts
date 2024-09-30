@@ -278,6 +278,45 @@ class tarefaClass {
             return res.status(500).json({ message: 'Erro ao buscar tarefa', error: error.message });
         }
     };
+
+    public async deleteTarefa(req: Request, res: Response): Promise<Response> {
+
+        try {
+            const { tarefaId } = req.params;
+            const { userId, listaId } = req.body;
+
+            const usuario = await Usuario.findById(userId);
+
+            if (!usuario) {
+                return res.status(404).json({ message: 'Usuário não encontrado' });
+            }
+
+            const tarefa = await Tarefa.findById(tarefaId)
+            if (!tarefa) {
+                return res.status(404).json({ message: 'Tarefa não encontrada' });
+            }
+
+            const lista = await Lista.findById(listaId)
+            if (!lista) {
+                return res.status(404).json({ message: 'Lista não encontrada' });
+            }
+
+            const usuariosComPermissaoDeEdicao = lista.usuariosPermitidos
+                .filter(usuario => usuario.podeEditar === true)
+                .map(usuario => usuario.usuarioId);
+
+            if (lista.usuarioId !== userId && !usuariosComPermissaoDeEdicao.includes(userId)) {
+                return res.status(404).json({ message: 'Você não possuí permissão para remover tarefas dessa lista.' });
+            }
+
+            await Tarefa.deleteOne({ _id: tarefaId })
+
+            return res.status(200).json({ message: 'Tarefa removida com sucesso' });
+        }
+        catch (error: any) {
+            return res.status(500).json({ message: 'Erro ao remover tarefa', error: error.message });
+        }
+    };
 };
 
 export default new tarefaClass();

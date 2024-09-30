@@ -7,5 +7,6 @@ routes.post('/', tarefaController.createTarefa);
 routes.get('/getTarefas', tarefaController.buscarTarefas);
 routes.get('/getTarefa/:tarefaId', tarefaController.buscarTarefa);
 routes.put('/update/:tarefaId', tarefaController.updateTarefa);
+routes.delete('/delete/:tarefaId', tarefaController.deleteTarefa);
 
 export default routes;
