@@ -110,8 +110,7 @@ class listaClass {
             const usuariosComPermissaoDeEdicao = lista.usuariosPermitidos
                 .filter(usuario => usuario.podeEditar === true)
                 .map(usuario => usuario.usuarioId);
-              
-            console.log(usuariosComPermissaoDeEdicao)
+
 
             if (lista.usuarioId !== userId && !usuariosComPermissaoDeEdicao.includes(userId)) {
                 return res.status(404).json({ message: 'Usuario não possuí permissão para editar lista' });
@@ -144,6 +143,37 @@ class listaClass {
         }
         catch (error: any) {
             return res.status(500).json({ message: 'Erro ao atualizar lista', error: error.message });
+        }
+    };
+
+    public async deleteLista(req: Request, res: Response): Promise<Response> {
+
+        try {
+            const { listaID } = req.params;
+            const { userId } = req.body;
+
+            const lista = await Lista.findById(listaID)
+            if (!lista) {
+                return res.status(404).json({ message: 'Lista não encontrada' });
+            }
+
+            const usuario = await Usuario.findById(userId);
+
+            if (!usuario) {
+                return res.status(404).json({ message: 'Usuário não encontrado' });
+            }
+
+            if (lista.usuarioId !== userId) {
+                return res.status(404).json({ message: 'Usuario não possuí permissão para deletar lista' });
+            }
+
+
+            await Lista.deleteOne({ _id: listaID })
+
+            return res.status(200).json({ message: 'Lista removida com sucesso' });
+        }
+        catch (error: any) {
+            return res.status(500).json({ message: 'Erro ao remover lista', error: error.message });
         }
     };
 
