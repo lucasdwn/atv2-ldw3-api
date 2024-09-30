@@ -4,7 +4,7 @@ export interface IPrioridade {
     usuarioId: string;
     nome: string;
     criadoEm: Date;
-    atualizadoEm: Date;
+    atualizadoEm?: Date;
     personalizacao: IPersonalizacao;
 }
 

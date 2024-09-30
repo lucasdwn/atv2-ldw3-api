@@ -8,7 +8,7 @@ const db = mongoose;
 
 export function connect() {
     db.connect(uri)
-        .then(() => console.log("Conectado ao MongoDB"))
+        .then(() => console.log("Conectado ao MongoDB com sucesso!"))
         .catch((e) => {
             console.error("Erro ao conectar ao MongoDB:", e.message);
         });

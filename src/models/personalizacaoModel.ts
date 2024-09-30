@@ -4,6 +4,7 @@ import { IPersonalizacaoModal } from '../interfaces/IPersonalizacao';
 export const PersonalizacaoSchema = new Schema<IPersonalizacaoModal>({
     icone: { type: String, required: true },
     cor: { type: String, required: true },
+    criadoEm: { type: Date, default: new Date() },
     atualizadoEm: { type: Date }
 });
 
@@ -14,4 +15,4 @@ PersonalizacaoSchema.method('toJSON', function () {
 });
 
 
-export const PersonalizacaoModel = mongoose.model<IPersonalizacaoModal>('Personalizacao', PersonalizacaoSchema);
+// export const PersonalizacaoModel = mongoose.model<IPersonalizacaoModal>('Personalizacao', PersonalizacaoSchema, 'Personalizacao');

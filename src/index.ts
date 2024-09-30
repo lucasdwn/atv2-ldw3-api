@@ -3,6 +3,7 @@ import cors from "cors";
 import dotenv from "dotenv";
 import { connect } from "./config/database";
 import routes from "./routes";
+import seedDatabase from "./config/seedDatabase";
 
 dotenv.config();
 
@@ -17,7 +18,8 @@ app.use(cors());
 async function startServer() {
     try {
         await connect();
-        console.log("Conectado ao MongoDB com sucesso!");
+
+        await seedDatabase();
 
         app.listen(PORT, () => {
             console.log(`Servidor rodando na porta ${PORT}...`);
