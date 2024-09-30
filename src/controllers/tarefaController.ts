@@ -261,7 +261,7 @@ class tarefaClass {
                 return res.status(404).json({ message: 'Você não possuí permissão para visualizar tarefas dessa lista.' });
             }
 
-            const tarefa = await Tarefa.findById(tarefaId)
+            const tarefa = await Tarefa.findOne({ _id: tarefaId, listaId: listaId })
                 .populate({
                     path: 'prioridadeId',
                     model: 'Prioridade',
@@ -273,7 +273,20 @@ class tarefaClass {
                     select: 'nome personalizacao'
                 });
 
-            return res.status(200).json(tarefa);
+            if (!tarefa) {
+                return res.status(404).json({ message: 'Tarefa não encontrada' });
+            };
+
+            const tarefaObj = tarefa.toObject({
+                versionKey: false,
+                transform: (doc, ret) => {
+                    ret.id = ret._id;
+                    delete ret._id;
+                    return ret;
+                }
+            });
+
+            return res.status(200).json(tarefaObj);
         } catch (error: any) {
             return res.status(500).json({ message: 'Erro ao buscar tarefa', error: error.message });
         }
