@@ -3,7 +3,7 @@ import prioridadeController from '../controllers/prioridadeController';
 
 const routes = Router();
 
-routes.post('/', prioridadeController.cratePrioridade);
+routes.post('/', prioridadeController.createPrioridade);
 routes.get('/list', prioridadeController.listPrioridades);
 
 export default routes;

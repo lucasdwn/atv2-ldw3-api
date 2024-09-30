@@ -7,7 +7,7 @@ import dateService from "../utils/dateService";
 
 class prioridadeController {
 
-    public async cratePrioridade(req: Request, res: Response): Promise<Response> {
+    public async createPrioridade(req: Request, res: Response): Promise<Response> {
 
         try {
 
