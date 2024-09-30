@@ -29,7 +29,8 @@ export const TarefaSchema = new Schema<ITarefaModal>({
     anexos: [anexoSchema],
     dataDeVencimento: { type: Date, required: [true, "o campo 'Data de vencimento' é obrigatório"] },
     realizadoEm: { type: Date },
-    criadoEm: { type: Date, default: Date.now }
+    criadoEm: { type: Date, default: Date.now },
+    atualizadoEm: { type: Date }
 });
 
 TarefaSchema.method('toJSON', function () {

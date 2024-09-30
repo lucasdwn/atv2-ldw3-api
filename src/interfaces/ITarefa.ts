@@ -13,6 +13,7 @@ export interface ITarefa {
     dataDeVencimento: Date;
     realizadoEm: Date;
     criadoEm: Date;
+    atualizadoEm?: Date;
 }
 
 export interface ISubTarefa {

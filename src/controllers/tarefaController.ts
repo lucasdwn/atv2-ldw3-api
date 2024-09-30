@@ -27,6 +27,14 @@ class tarefaClass {
                 return res.status(404).json({ message: 'Lista não encontrada' });
             }
 
+            const usuariosComPermissaoDeEdicao = lista.usuariosPermitidos
+                .filter(usuario => usuario.podeEditar === true)
+                .map(usuario => usuario.usuarioId);
+
+            if (lista.usuarioId !== userId && !usuariosComPermissaoDeEdicao.includes(userId)) {
+                return res.status(404).json({ message: 'Você não possuí permissão para criar tarefa nessa lista.' });
+            }
+
             if (!prioridadeId || prioridadeId === '') {
                 return res.status(400).json({ message: 'Prioridade é obrigatória.' });
             }
@@ -84,7 +92,85 @@ class tarefaClass {
 
         } catch (error: any) {
             console.log(error.message)
-            return res.status(500).json({ message: 'Erro ao criar lista', error: error.message })
+            return res.status(500).json({ message: 'Erro ao criar tarefa', error: error.message })
+        }
+    };
+
+    public async updateTarefa(req: Request, res: Response): Promise<Response> {
+        try {
+            const { tarefaId } = req.params
+            const { userId, listaId, titulo, prioridadeId, dataDeVencimento, realizadoEm, descricao, subTarefas, anexos } = req.body;
+
+            const tarefa = await Tarefa.findById(tarefaId);
+            if (!tarefa) {
+                return res.status(404).json({ message: 'Tarefa não encontrada' });
+            }
+
+            const usuario = await Usuario.findById(userId);
+            if (!usuario) {
+                return res.status(404).json({ message: 'Usuário não encontrado' });
+            }
+
+            const prioridade = await Prioridade.findById(prioridadeId);
+            if (!prioridade) {
+                return res.status(404).json({ message: 'Prioridade não encontrada' });
+            };
+
+            const lista = await Lista.findById(listaId);
+
+            if (!lista) {
+                return res.status(404).json({ message: 'Lista não encontrada' });
+            };
+
+            const usuariosComPermissaoDeEdicao = lista.usuariosPermitidos
+                .filter(usuario => usuario.podeEditar === true)
+                .map(usuario => usuario.usuarioId);
+
+            if (lista.usuarioId !== userId && !usuariosComPermissaoDeEdicao.includes(userId)) {
+                return res.status(404).json({ message: 'Você não possuí permissão para editar tarefas dessa lista.' });
+            }
+
+            tarefa.titulo = titulo || tarefa.titulo;
+            tarefa.descricao = descricao || tarefa.descricao;
+            tarefa.prioridadeId = prioridadeId || tarefa.prioridadeId;
+            tarefa.dataDeVencimento = dataDeVencimento || tarefa.dataDeVencimento;
+            tarefa.subTarefas = subTarefas || tarefa.subTarefas;
+            tarefa.anexos = anexos || tarefa.anexos;
+            tarefa.atualizadoEm = await dateService.getServiceDate();
+            tarefa.realizadoEm = realizadoEm || tarefa.realizadoEm;
+
+            if (tarefa.realizadoEm) {
+                tarefa.status = StatusEnum.Concluida;
+            } else if (tarefa.dataDeVencimento) {
+                const dataDeVencimento = dateService.getDataSemHoras(new Date(tarefa.dataDeVencimento));
+                const dataAtual = dateService.getDataSemHoras(dateService.getServiceDate());
+
+                if (dataDeVencimento.getTime() < dataAtual.getTime()) {
+                    tarefa.status = StatusEnum.Atrasada;
+                } else {
+                    tarefa.status = StatusEnum.Pendente;
+                }
+            }
+
+            await tarefa.save();
+
+            const tarefaObj = tarefa.toObject({
+                versionKey: false,
+                transform: (doc, ret) => {
+                    ret.id = ret._id;
+                    delete ret._id;
+                    return ret;
+                }
+            });
+
+            return res.status(201).json({
+                message: "Tarefa atualizada com sucesso",
+                tarefa: tarefaObj
+            });
+
+        } catch (error: any) {
+            console.log(error.message)
+            return res.status(500).json({ message: 'Erro ao atualizar tarefa', error: error.message })
         }
     };
 
@@ -123,9 +209,21 @@ class tarefaClass {
                 select: 'nome usuarioId personalizacao'
             });
 
+            const tarefasTransformadas = tarefas.map((tarefa) => {
+                const tarefaObj = tarefa.toObject({
+                    versionKey: false,
+                    transform: (doc, ret) => {
+                        ret.id = ret._id;
+                        delete ret._id;
+                        return ret;
+                    }
+                });
+                return tarefaObj;
+            });
+
             return res.status(200).json({
                 lista: lista,
-                tarefas: tarefas
+                tarefas: tarefasTransformadas
             });
 
         } catch (error: any) {
