@@ -7,12 +7,12 @@ const authMiddleware = (req: Request, res: Response, next: NextFunction) => {
     const token = req.header('Authorization');
 
     if (!token) {
-        return res.status(401).json({ message: 'Token não fornecido' });
+        return res.status(401).json({ message: 'Erro ao realizar autenticação', error: 'Token não fornecido' });
     }
 
     jwt.verify(token, JWT_SECRET, (err, decoded) => {
         if (err) {
-            return res.status(403).json({ message: 'Token inválido' });
+            return res.status(403).json({ message: 'Erro ao realizar autenticação', error: 'Token inválido' });
         }
 
         req.body.userId = (decoded as any).userId;

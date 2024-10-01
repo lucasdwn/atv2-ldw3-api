@@ -12,15 +12,15 @@ class listaClass {
             const usuario = await Usuario.findById(userId);
 
             if (!nome) {
-                return res.status(400).json({ message: 'Nome é obrigatório.' });
+                return res.status(400).json({ message: 'Erro ao criar lista', error: 'Nome é obrigatório.' });
             }
 
             if (!tipoListaId) {
-                return res.status(400).json({ message: 'Tipo de Lista é obrigatório.' });
+                return res.status(400).json({ message: 'Erro ao criar lista', error: 'Tipo de Lista é obrigatório.' });
             }
 
             if (!usuario) {
-                return res.status(404).json({ message: 'Usuário não encontrado' });
+                return res.status(404).json({ message: 'Erro ao criar lista', error: 'Usuário não encontrado' });
             }
 
             const personalizacaoLista = personalizacao ? personalizacao : getPersonalizacaoAleatoria();
@@ -67,7 +67,7 @@ class listaClass {
             const usuario = await Usuario.findById(userId);
 
             if (!usuario) {
-                return res.status(404).json({ message: 'Usuário não encontrado' });
+                return res.status(404).json({ message: 'Erro ao buscar listas', error: 'Usuário não encontrado' });
             }
 
             const skip = (Number(page) - 1) * Number(limit);
@@ -116,7 +116,7 @@ class listaClass {
             const usuario = await Usuario.findById(userId);
 
             if (!usuario) {
-                return res.status(404).json({ message: 'Usuário não encontrado' });
+                return res.status(404).json({ message: 'Erro ao buscar listas compartilhadas', error: 'Usuário não encontrado' });
             }
 
             const skip = (Number(page) - 1) * Number(limit);
@@ -164,13 +164,13 @@ class listaClass {
 
             const lista = await Lista.findById(listaId)
             if (!lista) {
-                return res.status(404).json({ message: 'Lista não encontrada' });
+                return res.status(404).json({ message: 'Erro ao atualizar lista', error: 'Lista não encontrada' });
             }
 
             const usuario = await Usuario.findById(userId);
 
             if (!usuario) {
-                return res.status(404).json({ message: 'Usuário não encontrado' });
+                return res.status(404).json({ message: 'Erro ao atualizar lista', error: 'Usuário não encontrado' });
             }
 
             const usuariosComPermissaoDeEdicao = lista.usuariosPermitidos
@@ -179,7 +179,7 @@ class listaClass {
 
 
             if (lista.usuarioId !== userId && !usuariosComPermissaoDeEdicao.includes(userId)) {
-                return res.status(404).json({ message: 'Usuario não possuí permissão para editar lista' });
+                return res.status(404).json({ message: 'Erro ao atualizar lista', error: 'Usuario não possuí permissão para editar lista' });
             }
 
             lista.nome = nome || lista.nome;
@@ -221,17 +221,17 @@ class listaClass {
 
             const lista = await Lista.findById(listaId)
             if (!lista) {
-                return res.status(404).json({ message: 'Lista não encontrada' });
+                return res.status(404).json({ message: 'Erro ao remover lista', error: 'Lista não encontrada' });
             }
 
             const usuario = await Usuario.findById(userId);
 
             if (!usuario) {
-                return res.status(404).json({ message: 'Usuário não encontrado' });
+                return res.status(404).json({ message: 'Erro ao remover lista', error: 'Usuário não encontrado' });
             }
 
             if (lista.usuarioId !== userId) {
-                return res.status(404).json({ message: 'Usuario não possuí permissão para deletar lista' });
+                return res.status(404).json({ message: 'Erro ao remover lista', error: 'Usuario não possuí permissão para deletar lista' });
             }
 
 
@@ -252,13 +252,13 @@ class listaClass {
             const usuario = await Usuario.findById(userId);
 
             if (!usuario) {
-                return res.status(404).json({ message: 'Usuário não encontrado' });
+                return res.status(404).json({ message: 'Erro ao buscar lista', error: 'Usuário não encontrado' });
             }
 
             const lista = await Lista.findById(listaId);
 
             if (!lista) {
-                return res.status(404).json({ message: 'Lista não encontrada' });
+                return res.status(404).json({ message: 'Erro ao buscar lista', error: 'Lista não encontrada' });
             }
 
             const usuariosComPermissaoDeEdicao = lista.usuariosPermitidos
@@ -266,7 +266,7 @@ class listaClass {
                 .map(usuario => usuario.usuarioId);
 
             if (lista.usuarioId !== userId && !usuariosComPermissaoDeEdicao.includes(userId)) {
-                return res.status(404).json({ message: 'Você não possuí permissão para visualizar essa lista.' });
+                return res.status(404).json({ message: 'Erro ao buscar lista', error: 'Você não possuí permissão para visualizar essa lista.' });
             }
 
             const listaObj = lista.toObject({

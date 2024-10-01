@@ -12,13 +12,13 @@ class anexoClass {
             const { userId, tarefaId } = req.body;
 
             if (!req.file) {
-                return res.status(400).json({ error: 'Nenhuma imagem enviada' });
+                return res.status(400).json({ message: 'Erro ao realizar upload', error: 'Nenhuma imagem enviada' });
             }
 
             const usuario = await Usuario.findById(userId);
 
             if (!usuario) {
-                return res.status(404).json({ message: 'Usuário não encontrado' });
+                return res.status(404).json({ message: 'Erro ao realizar upload', error: 'Usuário não encontrado' });
             }
 
             const imagemUpload: IUpload = await uploadToS3(req.file, 'images');
@@ -32,7 +32,7 @@ class anexoClass {
 
         } catch (error: any) {
             console.log(error.message)
-            return res.status(500).json({ message: 'Erro ao carregar imagem', error: error.message })
+            return res.status(500).json({ message: 'Erro ao realizar upload', error: 'Erro ao carregar imagem'})
         }
     }
 
@@ -42,7 +42,7 @@ class anexoClass {
             const { userId, tarefaId } = req.body;
 
             if (!req.file) {
-                return res.status(400).json({ error: 'Nenhum documento enviado' });
+                return res.status(400).json({ message: 'Erro ao realizar upload', error: 'Nenhum documento enviado' });
             }
 
             const documentoUpload: IUpload = await uploadToS3(req.file, 'documents');

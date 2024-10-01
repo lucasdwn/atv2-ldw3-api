@@ -59,7 +59,7 @@ const preserveBody = (type: 'image' | 'document') => {
         if (type === 'image') {
             imageUpload.single('image')(req, res, async (err: any) => {
                 if (err) {
-                    return res.status(400).json({ message: err.message });
+                    return res.status(400).json({ message: 'Erro ao realizar upload', error: err.message });
                 }
 
                 if (req.file) {
@@ -72,14 +72,14 @@ const preserveBody = (type: 'image' | 'document') => {
         } else if (type === 'document') {
             documentUpload.single('document')(req, res, async (err: any) => {
                 if (err) {
-                    return res.status(400).json({ message: err.message });
+                    return res.status(400).json({ message: 'Erro ao realizar upload', error: err.message });
                 }
 
                 req.body = { ...originalBody, ...req.body };
                 next();
             });
         } else {
-            return res.status(400).json({ message: 'Tipo de upload inválido' });
+            return res.status(400).json({ message: 'Erro ao realizar upload', error: 'Tipo de upload inválido' });
         }
     };
 };
