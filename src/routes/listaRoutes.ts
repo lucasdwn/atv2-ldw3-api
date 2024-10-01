@@ -6,7 +6,7 @@ const routes = Router();
 routes.post('/', listaController.createLista);
 routes.put('/update/:listaId', listaController.updateLista);
 routes.delete('/delete/:listaId', listaController.deleteLista);
-routes.get('/geta/:listaId', listaController.buscarLista);
+routes.get('/get/:listaId', listaController.buscarLista);
 routes.get('/getListsUser', listaController.buscarListasUser);
 routes.get('/getListsSharedWithMe', listaController.buscarListasCompartilhadasComUser);
 
