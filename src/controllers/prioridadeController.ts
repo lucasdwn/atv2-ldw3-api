@@ -15,13 +15,13 @@ class prioridadeController {
             const { userId, nome, personalizacao } = req.body;
 
             if (!nome) {
-                return res.status(400).json({ message: 'Nome é obrigatório.' });
+                return res.status(400).json({ message: 'Erro ao criar prioridade', error: 'Nome é obrigatório.' });
             }
 
             const usuario = await Usuario.findById(userId);
 
             if (!usuario) {
-                return res.status(404).json({ message: 'Usuário não encontrado' });
+                return res.status(404).json({ message: 'Erro ao criar prioridade', error: 'Usuário não encontrado' });
             }
 
             const personalizacaoPrioridade = personalizacao ? personalizacao : getPersonalizacaoAleatoria();
@@ -62,7 +62,7 @@ class prioridadeController {
             const usuario = await Usuario.findById(userId);
 
             if (!usuario) {
-                return res.status(404).json({ message: 'Usuário não encontrado' });
+                return res.status(404).json({ message: 'Erro ao listar prioridades', error: 'Usuário não encontrado' });
             }
 
             const prioridades = await Prioridade.find({
@@ -99,17 +99,17 @@ class prioridadeController {
             const prioridade = await Prioridade.findById(prioridadeId)
 
             if (!prioridade) {
-                return res.status(404).json({ message: 'Prioridade não encontrada' });
+                return res.status(404).json({ message: 'Erro ao atualizar prioridade', error: 'Prioridade não encontrada' });
             }
 
             const usuario = await Usuario.findById(userId);
 
             if (!usuario) {
-                return res.status(404).json({ message: 'Usuário não encontrado' });
+                return res.status(404).json({ message: 'Erro ao atualizar prioridade', error: 'Usuário não encontrado' });
             }
 
             if (prioridade.usuarioId !== userId) {
-                return res.status(404).json({ message: 'Prioridade não pertence ao usuario' });
+                return res.status(404).json({ message: 'Erro ao atualizar prioridade', error: 'Prioridade não pertence ao usuario' });
             }
 
 
@@ -147,28 +147,28 @@ class prioridadeController {
             const prioridade = await Prioridade.findById(prioridadeId)
 
             if (!prioridade) {
-                return res.status(404).json({ message: 'Prioridade não encontrada' });
+                return res.status(404).json({ message: 'Erro ao deletar prioridade', error: 'Prioridade não encontrada' });
             }
 
             const usuario = await Usuario.findById(userId);
 
             if (!usuario) {
-                return res.status(404).json({ message: 'Usuário não encontrado' });
+                return res.status(404).json({ message: 'Erro ao deletar prioridade', error: 'Usuário não encontrado' });
             }
 
             if (prioridade.usuarioId !== userId) {
-                return res.status(404).json({ message: 'Prioridade não pertence ao usuario' });
+                return res.status(404).json({ message: 'Erro ao deletar prioridade', error: 'Prioridade não pertence ao usuario' });
             }
 
             const tarefas = await Tarefa.find({ prioridadeId: prioridadeId });
 
             if (tarefas && tarefas.length > 0) {
-                return res.status(404).json({ message: 'Remova prioridade das tarefas antes de remove-la' });
+                return res.status(404).json({ message: 'Erro ao deletar prioridade', error: 'Remova prioridade das tarefas antes de remove-la' });
             }
 
             await Prioridade.deleteOne({ _id: prioridadeId })
 
-            return res.status(200).json({ message: 'Prioridade removida com sucesso' });
+            return res.status(200).json({ message: 'Prioridade deletada com sucesso' });
         } catch (error: any) {
             return res.status(500).json({ message: 'Erro ao deletar prioridade', error: error.message });
         }
@@ -182,13 +182,13 @@ class prioridadeController {
             const usuario = await Usuario.findById(userId);
 
             if (!usuario) {
-                return res.status(404).json({ message: 'Usuário não encontrado' });
+                return res.status(404).json({ message: 'Erro ao listar prioridades', error: 'Usuário não encontrado' });
             }
 
             const prioridade = await Prioridade.findOne({ _id: prioridadeId, usuarioId: userId });
 
             if (!prioridade) {
-                return res.status(404).json({ message: 'Propriedade não encontrada' });
+                return res.status(404).json({ message: 'Erro ao listar prioridades', error: 'Propriedade não encontrada' });
             }
 
             const prioridadeObj = prioridade.toObject({

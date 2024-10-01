@@ -14,17 +14,17 @@ class tarefaClass {
 
             const usuario = await Usuario.findById(userId);
             if (!usuario) {
-                return res.status(404).json({ message: 'Usuário não encontrado' });
+                return res.status(404).json({ message: 'Erro ao criar tarefa', error: 'Usuário não encontrado' });
             }
 
             if (!listaId || listaId === '') {
-                return res.status(400).json({ message: 'Lista é obrigatória.' });
+                return res.status(400).json({ message: 'Erro ao criar tarefa', error: 'Lista é obrigatória.' });
             }
 
             const lista = await Lista.findById(listaId);
 
             if (!lista) {
-                return res.status(404).json({ message: 'Lista não encontrada' });
+                return res.status(404).json({ message: 'Erro ao criar tarefa', error: 'Lista não encontrada' });
             }
 
             const usuariosComPermissaoDeEdicao = lista.usuariosPermitidos
@@ -32,24 +32,24 @@ class tarefaClass {
                 .map(usuario => usuario.usuarioId);
 
             if (lista.usuarioId !== userId && !usuariosComPermissaoDeEdicao.includes(userId)) {
-                return res.status(404).json({ message: 'Você não possuí permissão para criar tarefa nessa lista.' });
+                return res.status(404).json({ message: 'Erro ao criar tarefa', error: 'Você não possuí permissão para criar tarefa nessa lista.' });
             }
 
             if (!prioridadeId || prioridadeId === '') {
-                return res.status(400).json({ message: 'Prioridade é obrigatória.' });
+                return res.status(400).json({ message: 'Erro ao criar tarefa', error: 'Prioridade é obrigatória.' });
             }
 
             const prioridade = await Prioridade.findById(prioridadeId);
             if (!prioridade) {
-                return res.status(404).json({ message: 'Prioridade não encontrada' });
+                return res.status(404).json({ message: 'Erro ao criar tarefa', error: 'Prioridade não encontrada' });
             }
 
             if (!titulo) {
-                return res.status(400).json({ message: 'Titulo é obrigatório.' });
+                return res.status(400).json({ message: 'Erro ao criar tarefa', error: 'Titulo é obrigatório.' });
             }
 
             if (!dataDeVencimento) {
-                return res.status(400).json({ message: 'Data de Vencimento é obrigatório.' });
+                return res.status(400).json({ message: 'Erro ao criar tarefa', error: 'Data de Vencimento é obrigatório.' });
             }
 
 
@@ -103,23 +103,23 @@ class tarefaClass {
 
             const tarefa = await Tarefa.findById(tarefaId);
             if (!tarefa) {
-                return res.status(404).json({ message: 'Tarefa não encontrada' });
+                return res.status(404).json({ message: 'Erro ao atualizar tarefa', error: 'Tarefa não encontrada' });
             }
 
             const usuario = await Usuario.findById(userId);
             if (!usuario) {
-                return res.status(404).json({ message: 'Usuário não encontrado' });
+                return res.status(404).json({ message: 'Erro ao atualizar tarefa', error: 'Usuário não encontrado' });
             }
 
             const prioridade = await Prioridade.findById(prioridadeId);
             if (!prioridade) {
-                return res.status(404).json({ message: 'Prioridade não encontrada' });
+                return res.status(404).json({ message: 'Erro ao atualizar tarefa', error: 'Prioridade não encontrada' });
             };
 
             const lista = await Lista.findById(listaId);
 
             if (!lista) {
-                return res.status(404).json({ message: 'Lista não encontrada' });
+                return res.status(404).json({ message: 'Erro ao atualizar tarefa', error: 'Lista não encontrada' });
             };
 
             const usuariosComPermissaoDeEdicao = lista.usuariosPermitidos
@@ -127,7 +127,7 @@ class tarefaClass {
                 .map(usuario => usuario.usuarioId);
 
             if (lista.usuarioId !== userId && !usuariosComPermissaoDeEdicao.includes(userId)) {
-                return res.status(404).json({ message: 'Você não possuí permissão para editar tarefas dessa lista.' });
+                return res.status(404).json({ message: 'Erro ao atualizar tarefa', error: 'Você não possuí permissão para editar tarefas dessa lista.' });
             }
 
             tarefa.titulo = titulo || tarefa.titulo;
@@ -182,17 +182,17 @@ class tarefaClass {
             const usuario = await Usuario.findById(userId);
 
             if (!usuario) {
-                return res.status(404).json({ message: 'Usuário não encontrado' });
+                return res.status(404).json({ message: 'Erro ao buscar tarefas', error: 'Usuário não encontrado' });
             };
 
             if (!listaId || listaId === '') {
-                return res.status(400).json({ message: 'Lista é obrigatória.' });
+                return res.status(400).json({ message: 'Erro ao buscar tarefas', error: 'Lista é obrigatória.' });
             };
 
             const lista = await Lista.findById(listaId);
 
             if (!lista) {
-                return res.status(404).json({ message: 'Lista não encontrada' });
+                return res.status(404).json({ message: 'Erro ao buscar tarefas', error: 'Lista não encontrada' });
             };
 
             const usuariosComPermissaoDeEdicao = lista.usuariosPermitidos
@@ -200,7 +200,7 @@ class tarefaClass {
                 .map(usuario => usuario.usuarioId);
 
             if (lista.usuarioId !== userId && !usuariosComPermissaoDeEdicao.includes(userId)) {
-                return res.status(404).json({ message: 'Você não possuí permissão para visualizar tarefas dessa lista.' });
+                return res.status(404).json({ message: 'Erro ao buscar tarefas', error: 'Você não possuí permissão para visualizar tarefas dessa lista.' });
             }
 
             const tarefas = await Tarefa.find({ listaId: listaId }).populate({
@@ -240,17 +240,17 @@ class tarefaClass {
             const usuario = await Usuario.findById(userId);
 
             if (!usuario) {
-                return res.status(404).json({ message: 'Usuário não encontrado' });
+                return res.status(404).json({ message: 'Erro ao buscar tarefa', error: 'Usuário não encontrado' });
             };
 
             if (!listaId || listaId === '') {
-                return res.status(400).json({ message: 'Lista é obrigatória.' });
+                return res.status(400).json({ message: 'Erro ao buscar tarefa', error: 'Lista é obrigatória.' });
             };
 
             const lista = await Lista.findById(listaId);
 
             if (!lista) {
-                return res.status(404).json({ message: 'Lista não encontrada' });
+                return res.status(404).json({ message: 'Erro ao buscar tarefa', error: 'Lista não encontrada' });
             };
 
             const usuariosComPermissaoDeEdicao = lista.usuariosPermitidos
@@ -258,7 +258,7 @@ class tarefaClass {
                 .map(usuario => usuario.usuarioId);
 
             if (lista.usuarioId !== userId && !usuariosComPermissaoDeEdicao.includes(userId)) {
-                return res.status(404).json({ message: 'Você não possuí permissão para visualizar tarefas dessa lista.' });
+                return res.status(404).json({ message: 'Erro ao buscar tarefa', error: 'Você não possuí permissão para visualizar tarefas dessa lista.' });
             }
 
             const tarefa = await Tarefa.findOne({ _id: tarefaId, listaId: listaId })
@@ -274,7 +274,7 @@ class tarefaClass {
                 });
 
             if (!tarefa) {
-                return res.status(404).json({ message: 'Tarefa não encontrada' });
+                return res.status(404).json({ message: 'Erro ao buscar tarefa', error: 'Tarefa não encontrada' });
             };
 
             const tarefaObj = tarefa.toObject({
@@ -301,17 +301,17 @@ class tarefaClass {
             const usuario = await Usuario.findById(userId);
 
             if (!usuario) {
-                return res.status(404).json({ message: 'Usuário não encontrado' });
+                return res.status(404).json({ message: 'Erro ao deletar tarefa', error: 'Usuário não encontrado' });
             }
 
             const tarefa = await Tarefa.findById(tarefaId)
             if (!tarefa) {
-                return res.status(404).json({ message: 'Tarefa não encontrada' });
+                return res.status(404).json({ message: 'Erro ao deletar tarefa', error: 'Tarefa não encontrada' });
             }
 
             const lista = await Lista.findById(listaId)
             if (!lista) {
-                return res.status(404).json({ message: 'Lista não encontrada' });
+                return res.status(404).json({ message: 'Erro ao deletar tarefa', error: 'Lista não encontrada' });
             }
 
             const usuariosComPermissaoDeEdicao = lista.usuariosPermitidos
@@ -319,15 +319,15 @@ class tarefaClass {
                 .map(usuario => usuario.usuarioId);
 
             if (lista.usuarioId !== userId && !usuariosComPermissaoDeEdicao.includes(userId)) {
-                return res.status(404).json({ message: 'Você não possuí permissão para remover tarefas dessa lista.' });
+                return res.status(404).json({ message: 'Erro ao deletar tarefa', error: 'Você não possuí permissão para deletar tarefas dessa lista.' });
             }
 
             await Tarefa.deleteOne({ _id: tarefaId })
 
-            return res.status(200).json({ message: 'Tarefa removida com sucesso' });
+            return res.status(200).json({ message: 'Tarefa deletada com sucesso' });
         }
         catch (error: any) {
-            return res.status(500).json({ message: 'Erro ao remover tarefa', error: error.message });
+            return res.status(500).json({ message: 'Erro ao deletar tarefa', error: error.message });
         }
     };
 };

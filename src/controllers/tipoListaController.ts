@@ -14,13 +14,13 @@ class tipoListaController {
             const { userId, nome, personalizacao } = req.body;
 
             if (!nome) {
-                return res.status(400).json({ message: 'Nome é obrigatório.' });
+                return res.status(400).json({ message: 'Erro ao criar tipo Tipo de Lista', error: 'Nome é obrigatório.' });
             }
 
             const usuario = await Usuario.findById(userId);
 
             if (!usuario) {
-                return res.status(404).json({ message: 'Usuário não encontrado' });
+                return res.status(404).json({ message: 'Erro ao criar tipo Tipo de Lista', error: 'Usuário não encontrado' });
             }
 
             const personalizacaoTipoLista = personalizacao ? personalizacao : getPersonalizacaoAleatoria();
@@ -61,7 +61,7 @@ class tipoListaController {
 
             const usuario = await Usuario.findById(userId);
             if (!usuario) {
-                return res.status(404).json({ message: 'Usuário não encontrado' });
+                return res.status(404).json({ message: 'Erro ao listar Tipos de lista', error: 'Usuário não encontrado' });
             }
 
             const tiposLista = await TipoLista.find({
@@ -100,17 +100,17 @@ class tipoListaController {
             const tipoLista = await TipoLista.findById(tipoListaId)
 
             if (!tipoLista) {
-                return res.status(404).json({ message: 'Tipo de lista não encontrado' });
+                return res.status(404).json({ message: 'Erro ao atualizar Tipo de lista', error: 'Tipo de lista não encontrado' });
             }
 
             const usuario = await Usuario.findById(userId);
 
             if (!usuario) {
-                return res.status(404).json({ message: 'Usuário não encontrado' });
+                return res.status(404).json({ message: 'Erro ao atualizar Tipo de lista', error: 'Usuário não encontrado' });
             }
 
             if (tipoLista.usuarioId !== userId) {
-                return res.status(404).json({ message: 'Tipo de lista não pertence ao usuario' });
+                return res.status(404).json({ message: 'Erro ao atualizar Tipo de lista', error: 'Tipo de lista não pertence ao usuario' });
             }
 
 
@@ -148,28 +148,28 @@ class tipoListaController {
             const tipoLista = await TipoLista.findById(tipoListaId)
 
             if (!tipoLista) {
-                return res.status(404).json({ message: 'Tipo de lista não encontrado' });
+                return res.status(404).json({ message: 'Erro ao deletar Tipo de lista', error: 'Tipo de lista não encontrado' });
             }
 
             const usuario = await Usuario.findById(userId);
 
             if (!usuario) {
-                return res.status(404).json({ message: 'Usuário não encontrado' });
+                return res.status(404).json({ message: 'Erro ao deletar Tipo de lista', error: 'Usuário não encontrado' });
             }
 
             if (tipoLista.usuarioId !== userId) {
-                return res.status(404).json({ message: 'Tipo de lista não pertence ao usuario' });
+                return res.status(404).json({ message: 'Erro ao deletar Tipo de lista', error: 'Tipo de lista não pertence ao usuario' });
             }
 
             const listas = await Lista.find({ tipoListaId: tipoListaId });
 
             if (listas && listas.length > 0) {
-                return res.status(404).json({ message: 'Tipo de listas ainda possuí vinculos' });
+                return res.status(404).json({ message: 'Erro ao deletar Tipo de lista', error: 'Remova Tipo de lista das listas antes de remove-lo' });
             }
 
             await TipoLista.deleteOne({ _id: tipoListaId })
 
-            return res.status(200).json({ message: 'Remova Tipo de lista das listas antes de remove-lo' });
+            return res.status(200).json({ message: 'Tipo de lista deletada com sucesso' });
         } catch (error: any) {
             return res.status(500).json({ message: 'Erro ao deletar Tipo de lista', error: error.message });
         }
@@ -183,13 +183,13 @@ class tipoListaController {
             const usuario = await Usuario.findById(userId);
 
             if (!usuario) {
-                return res.status(404).json({ message: 'Usuário não encontrado' });
+                return res.status(404).json({ message: 'Erro ao listar Tipos de lista', error: 'Usuário não encontrado' });
             }
 
             const tipoLista = await TipoLista.findOne({ _id: tipoListaId, usuarioId: userId });
 
             if (!tipoLista) {
-                return res.status(404).json({ message: 'Tipo de lista não encontrado' });
+                return res.status(404).json({ message: 'Erro ao listar Tipos de lista', error: 'Tipo de lista não encontrado' });
             }
 
             const tipoListaObj = tipoLista.toObject({
