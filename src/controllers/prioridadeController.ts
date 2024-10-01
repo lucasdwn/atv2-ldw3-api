@@ -1,9 +1,9 @@
 import { Request, Response } from "express";
 import Usuario from "../models/usuarioModel";
-import { personalizacaoPredefinida } from "../interfaces/IPersonalizacao";
 import Prioridade from "../models/prioridadeModel";
 import dateService from "../utils/dateService";
 import Tarefa from "../models/tarefaModel";
+import { getPersonalizacaoAleatoria } from "../utils/personalizacao";
 
 
 class prioridadeController {
@@ -24,7 +24,7 @@ class prioridadeController {
                 return res.status(404).json({ message: 'Usuário não encontrado' });
             }
 
-            const personalizacaoPrioridade = personalizacao ? personalizacao : personalizacaoPredefinida;
+            const personalizacaoPrioridade = personalizacao ? personalizacao : getPersonalizacaoAleatoria();
 
             const novaPrioridade = new Prioridade({
                 usuarioId: userId,

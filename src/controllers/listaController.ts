@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import Usuario from "../models/usuarioModel";
 import Lista from "../models/listaModel";
 import dateService from "../utils/dateService";
-import { personalizacaoPredefinidaLista } from "../interfaces/ILista";
+import { getPersonalizacaoAleatoria } from "../utils/personalizacao";
 
 class listaClass {
     public async createLista(req: Request, res: Response): Promise<Response> {
@@ -23,7 +23,7 @@ class listaClass {
                 return res.status(404).json({ message: 'Usuário não encontrado' });
             }
 
-            const personalizacaoLista = personalizacao ? personalizacao : personalizacaoPredefinidaLista;
+            const personalizacaoLista = personalizacao ? personalizacao : getPersonalizacaoAleatoria();
 
             const novaLista = new Lista({
                 usuarioId: userId,
@@ -62,22 +62,28 @@ class listaClass {
     public async buscarListasUser(req: Request, res: Response): Promise<Response> {
         try {
             const { userId } = req.body;
-
+            const { page = 1, limit = 10 } = req.query; // Pega a página e o limite da query
+    
             const usuario = await Usuario.findById(userId);
-
+    
             if (!usuario) {
                 return res.status(404).json({ message: 'Usuário não encontrado' });
             }
-
+    
+            const skip = (Number(page) - 1) * Number(limit); // Cálculo para pular os registros
+    
             const listas = await Lista.find({ usuarioId: userId })
                 .populate({
                     path: 'tipoListaId',
                     model: 'TipoLista',
                     select: 'nome usuarioId personalizacao'
-                });
-
-
-
+                })
+                .sort({ criadoEm: -1 }) // Ordena para trazer os mais recentes
+                .skip(skip) // Pula os registros
+                .limit(Number(limit)); // Limita a quantidade de registros retornados
+    
+            const totalListas = await Lista.countDocuments({ usuarioId: userId }); // Conta o total de listas
+    
             const listasTransformadas = listas.map((lista) => {
                 const listasObj = lista.toObject({
                     versionKey: false,
@@ -89,12 +95,18 @@ class listaClass {
                 });
                 return listasObj;
             });
-
-            return res.status(200).json(listasTransformadas);
+    
+            return res.status(200).json({
+                total: totalListas,
+                page: Number(page),
+                limit: Number(limit),
+                listas: listasTransformadas,
+            });
         } catch (error: any) {
             return res.status(500).json({ message: 'Erro ao buscar listas', error: error.message });
         }
-    };
+    }
+    
 
     public async buscarListasCompartilhadasComUser(req: Request, res: Response): Promise<Response> {
         try {
