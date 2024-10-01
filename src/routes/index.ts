@@ -6,9 +6,11 @@ import authMiddleware from "../middlewares/authMiddleware";
 import prioridadeRoutes from "./prioridadeRoutes";
 import listaRoutes from "./listaRoutes";
 import tarefaRoutes from "./tarefaRoutes";
+import tipoListaRoutes from "./tipoListaRoutes"
 
 const routes = Router()
 
+routes.use('/tipoLista', authMiddleware, tipoListaRoutes)
 routes.use('/tarefa', authMiddleware, tarefaRoutes)
 routes.use('/lista', authMiddleware, listaRoutes)
 routes.use('/prioridade', authMiddleware, prioridadeRoutes)

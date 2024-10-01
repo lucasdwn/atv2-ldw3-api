@@ -7,12 +7,16 @@ import { personalizacaoPredefinidaLista } from "../interfaces/ILista";
 class listaClass {
     public async createLista(req: Request, res: Response): Promise<Response> {
         try {
-            const { userId, nome, personalizacao, usuariosPermitidos } = req.body;
+            const { userId, nome, personalizacao, usuariosPermitidos, tipoListaId } = req.body;
 
             const usuario = await Usuario.findById(userId);
 
             if (!nome) {
                 return res.status(400).json({ message: 'Nome é obrigatório.' });
+            }
+
+            if (!tipoListaId) {
+                return res.status(400).json({ message: 'Tipo de Lista é obrigatório.' });
             }
 
             if (!usuario) {
@@ -24,6 +28,7 @@ class listaClass {
             const novaLista = new Lista({
                 usuarioId: userId,
                 nome,
+                tipoListaId,
                 criadoEm: await dateService.getServiceDate(),
                 personalizacao: personalizacaoLista
             });
@@ -64,7 +69,14 @@ class listaClass {
                 return res.status(404).json({ message: 'Usuário não encontrado' });
             }
 
-            const listas = await Lista.find({ usuarioId: userId });
+            const listas = await Lista.find({ usuarioId: userId })
+                .populate({
+                    path: 'tipoListaId',
+                    model: 'TipoLista',
+                    select: 'nome usuarioId personalizacao'
+                });
+
+
 
             const listasTransformadas = listas.map((lista) => {
                 const listasObj = lista.toObject({
@@ -94,7 +106,12 @@ class listaClass {
                 return res.status(404).json({ message: 'Usuário não encontrado' });
             }
 
-            const listas = await Lista.find({ "usuariosPermitidos.usuarioId": userId });
+            const listas = await Lista.find({ "usuariosPermitidos.usuarioId": userId })
+                .populate({
+                    path: 'tipoListaId',
+                    model: 'TipoLista',
+                    select: 'nome usuarioId personalizacao'
+                });
 
             const listasTransformadas = listas.map((lista) => {
                 const listasObj = lista.toObject({
@@ -118,7 +135,7 @@ class listaClass {
 
         try {
             const { listaId } = req.params;
-            const { userId, nome, personalizacao, usuariosPermitidos } = req.body;
+            const { userId, nome, personalizacao, usuariosPermitidos, tipoListaId } = req.body;
 
             const lista = await Lista.findById(listaId)
             if (!lista) {
@@ -143,6 +160,7 @@ class listaClass {
             lista.nome = nome || lista.nome;
             lista.personalizacao = personalizacao || lista.personalizacao;
             lista.atualizadoEm = await dateService.getServiceDate();
+            lista.tipoListaId = tipoListaId || lista.tipoListaId;
 
             if (lista.usuarioId === userId) {
                 lista.usuariosPermitidos = usuariosPermitidos || lista.usuariosPermitidos

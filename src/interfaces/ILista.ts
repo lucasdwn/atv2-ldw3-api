@@ -5,6 +5,7 @@ import { IUsuarioPermitido } from "./IUsuario";
 export interface ILista {
     usuarioId: string;
     nome: string;
+    tipoListaId: string;
     usuariosPermitidos: IUsuarioPermitido[];
     criadoEm: Date;
     atualizadoEm?: Date;

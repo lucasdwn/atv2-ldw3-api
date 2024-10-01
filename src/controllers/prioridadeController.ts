@@ -3,6 +3,7 @@ import Usuario from "../models/usuarioModel";
 import { personalizacaoPredefinida } from "../interfaces/IPersonalizacao";
 import Prioridade from "../models/prioridadeModel";
 import dateService from "../utils/dateService";
+import Tarefa from "../models/tarefaModel";
 
 
 class prioridadeController {
@@ -157,6 +158,12 @@ class prioridadeController {
 
             if (prioridade.usuarioId !== userId) {
                 return res.status(404).json({ message: 'Prioridade não pertence ao usuario' });
+            }
+
+            const tarefas = await Tarefa.find({ prioridadeId: prioridadeId });
+
+            if (tarefas && tarefas.length > 0) {
+                return res.status(404).json({ message: 'Remova prioridade das tarefas antes de remove-la' });
             }
 
             await Prioridade.deleteOne({ _id: prioridadeId })
