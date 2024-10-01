@@ -62,28 +62,28 @@ class listaClass {
     public async buscarListasUser(req: Request, res: Response): Promise<Response> {
         try {
             const { userId } = req.body;
-            const { page = 1, limit = 10 } = req.query; // Pega a página e o limite da query
-    
+            const { page = 1, limit = 10 } = req.query;
+
             const usuario = await Usuario.findById(userId);
-    
+
             if (!usuario) {
                 return res.status(404).json({ message: 'Usuário não encontrado' });
             }
-    
-            const skip = (Number(page) - 1) * Number(limit); // Cálculo para pular os registros
-    
+
+            const skip = (Number(page) - 1) * Number(limit);
+
             const listas = await Lista.find({ usuarioId: userId })
                 .populate({
                     path: 'tipoListaId',
                     model: 'TipoLista',
                     select: 'nome usuarioId personalizacao'
                 })
-                .sort({ criadoEm: -1 }) // Ordena para trazer os mais recentes
-                .skip(skip) // Pula os registros
-                .limit(Number(limit)); // Limita a quantidade de registros retornados
-    
-            const totalListas = await Lista.countDocuments({ usuarioId: userId }); // Conta o total de listas
-    
+                .sort({ criadoEm: -1 })
+                .skip(skip)
+                .limit(Number(limit));
+
+            const totalListas = await Lista.countDocuments({ usuarioId: userId });
+
             const listasTransformadas = listas.map((lista) => {
                 const listasObj = lista.toObject({
                     versionKey: false,
@@ -95,7 +95,7 @@ class listaClass {
                 });
                 return listasObj;
             });
-    
+
             return res.status(200).json({
                 total: totalListas,
                 page: Number(page),
@@ -106,11 +106,12 @@ class listaClass {
             return res.status(500).json({ message: 'Erro ao buscar listas', error: error.message });
         }
     }
-    
+
 
     public async buscarListasCompartilhadasComUser(req: Request, res: Response): Promise<Response> {
         try {
             const { userId } = req.body;
+            const { page = 1, limit = 10 } = req.query;
 
             const usuario = await Usuario.findById(userId);
 
@@ -118,12 +119,19 @@ class listaClass {
                 return res.status(404).json({ message: 'Usuário não encontrado' });
             }
 
+            const skip = (Number(page) - 1) * Number(limit);
+
             const listas = await Lista.find({ "usuariosPermitidos.usuarioId": userId })
                 .populate({
                     path: 'tipoListaId',
                     model: 'TipoLista',
                     select: 'nome usuarioId personalizacao'
-                });
+                })
+                .sort({ criadoEm: -1 })
+                .skip(skip)
+                .limit(Number(limit));
+
+            const totalListas = await Lista.countDocuments({ usuarioId: userId });
 
             const listasTransformadas = listas.map((lista) => {
                 const listasObj = lista.toObject({
@@ -137,7 +145,12 @@ class listaClass {
                 return listasObj;
             });
 
-            return res.status(200).json(listasTransformadas);
+            return res.status(200).json({
+                total: totalListas,
+                page: Number(page),
+                limit: Number(limit),
+                listas: listasTransformadas,
+            });
         } catch (error: any) {
             return res.status(500).json({ message: 'Erro ao buscar listas compartilhadas', error: error.message });
         }
