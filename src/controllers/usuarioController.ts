@@ -14,28 +14,29 @@ class UsuarioController {
             const { nome, email, senha } = req.body;
 
             if (!nome || !email || !senha) {
-                return res.status(400).json({ message: 'Nome, email e senha são obrigatórios.' });
+                return res.status(400).json({ message: 'Erro ao criar usuário', error: 'Nome, email e senha são obrigatórios.' });
             }
 
             if (senha) {
                 if (senha.length < 6) {
-                    return res.status(400).json({ message: "A senha precisa ter no mínimo 6 caracteres" });
+                    return res.status(400).json({ message: 'Erro ao criar usuário', error: "A senha precisa ter no mínimo 6 caracteres" });
                 }
                 else if (senha.length > 20) {
-                    return res.status(400).json({ message: "A senha precisa ter no máximo 20 caracteres" });
+                    return res.status(400).json({ message: 'Erro ao criar usuário', error: "A senha precisa ter no máximo 20 caracteres" });
                 }
             }
 
-            const emailExistente = await Usuario.findOne({ email });
+            const emailLowerCase = email.toLowerCase();
+            const emailExistente = await Usuario.findOne({ emailLowerCase });
             if (emailExistente) {
-                return res.status(400).json({ message: 'Email já está em uso.' });
+                return res.status(400).json({ message: 'Erro ao criar usuário', error: 'Email já está em uso.' });
             }
 
             const senhaCriptografada = await criptografia.criptografarSenha(senha);
 
             const novoUsuario = new Usuario({
                 nome,
-                email,
+                email: emailLowerCase,
                 senha: senhaCriptografada,
                 criadoEm: await dateService.getServiceDate(),
             });
@@ -78,26 +79,29 @@ class UsuarioController {
             const usuario = await Usuario.findById(userId);
 
             if (!usuario) {
-                return res.status(404).json({ message: 'Usuário não encontrado' });
+                return res.status(404).json({ message: 'Erro ao atualizar usuário', error: 'Usuário não encontrado' });
             }
 
             if (senha) {
                 if (senha.length < 6) {
-                    return res.status(400).json({ message: "A senha precisa ter no mínimo 6 caracteres" });
+                    return res.status(400).json({ message: 'Erro ao atualizar usuário', error: "A senha precisa ter no mínimo 6 caracteres" });
                 }
                 else if (senha.length > 20) {
-                    return res.status(400).json({ message: "A senha precisa ter no máximo 20 caracteres" });
+                    return res.status(400).json({ message: 'Erro ao atualizar usuário', error: "A senha precisa ter no máximo 20 caracteres" });
                 }
 
                 usuario.senha = await criptografia.criptografarSenha(senha);
             }
 
             if (email) {
-                const emailExistente = await Usuario.findOne({ email, _id: { $ne: userId } });
+                const emailLowerCase = email.toLowerCase();
+                const emailExistente = await Usuario.findOne({ email: emailLowerCase, _id: { $ne: userId } });
 
                 if (emailExistente) {
-                    return res.status(400).json({ message: 'Email já está em uso.' });
+                    return res.status(400).json({ message: 'Erro ao atualizar usuário', error: 'Email já está em uso.' });
                 }
+
+                usuario.email = emailLowerCase || usuario.email;
             }
 
             let profileImageUrl: IUpload | undefined;
@@ -107,7 +111,6 @@ class UsuarioController {
             }
 
             usuario.nome = nome || usuario.nome;
-            usuario.email = email || usuario.email;
             usuario.atualizadoEm = await dateService.getServiceDate();
             usuario.profileImage = profileImageUrl?.url || usuario.profileImage;
 
@@ -126,13 +129,13 @@ class UsuarioController {
             return res.status(200).json({ message: 'Usuário atualizado com sucesso', userWithoutPassword });
         } catch (error: any) {
             if (error.code === 11000 || error.code === 11001) {
-                return res.status(500).json({ message: 'Erro ao criar usuário', error: "Este e-mail já está em uso" });
+                return res.status(500).json({ message: 'Erro ao atualizar usuário', error: "Este e-mail já está em uso" });
             } else if (error && error.errors["email"]) {
-                return res.status(400).json({ message: 'Erro ao criar usuário', error: error.errors["email"].message });
+                return res.status(400).json({ message: 'Erro ao atualizar usuário', error: error.errors["email"].message });
             } else if (error && error.errors["senha"]) {
-                return res.status(400).json({ message: 'Erro ao criar usuário', error: error.errors["senha"].message });
+                return res.status(400).json({ message: 'Erro ao atualizar usuário', error: error.errors["senha"].message });
             }
-            return res.status(500).json({ message: 'Erro ao criar usuário', error: error.message });
+            return res.status(500).json({ message: 'Erro ao atualizar usuário', error: error.message });
         }
     };
 
@@ -143,7 +146,7 @@ class UsuarioController {
             const usuario = await Usuario.findByIdAndDelete(userId);
 
             if (!usuario) {
-                return res.status(404).json({ message: 'Usuário não encontrado' });
+                return res.status(404).json({ message: 'Erro ao deletar usuário', error: 'Usuário não encontrado' });
             }
 
             return res.status(200).json({ message: 'Usuário removido com sucesso' });
@@ -168,7 +171,7 @@ class UsuarioController {
             const usuario = await Usuario.findById(userId);
 
             if (!usuario) {
-                return res.status(404).json({ message: 'Usuário não encontrado' });
+                return res.status(404).json({ message: 'Erro ao buscar informações do usuário', error: 'Usuário não encontrado' });
             }
             return res.status(200).json(usuario);
         } catch (error: any) {
@@ -182,7 +185,7 @@ class UsuarioController {
             const usuario = await Usuario.findById(userId);
 
             if (!usuario) {
-                return res.status(404).json({ message: 'Usuário não encontrado' });
+                return res.status(404).json({ message: 'Erro ao buscar informações do usuário', error: 'Usuário não encontrado' });
             }
 
             return res.status(200).json(usuario);

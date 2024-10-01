@@ -24,18 +24,18 @@ class AuthController {
             const { email, senha } = req.body;
 
             if (!email || !senha) {
-                return res.status(400).json({ message: "E-mail e senha são obrigatórios" });
+                return res.status(400).json({ message: 'Erro ao realizar login', error: "E-mail e senha são obrigatórios" });
             }
-
-            const usuario = await Usuario.findOne({ email, removidoEm: null }).select("+senha");
+            const emailLowerCase = email.toLowerCase();
+            const usuario = await Usuario.findOne({ email: emailLowerCase, removidoEm: null }).select("+senha");
             if (!usuario) {
-                return res.status(401).json({ message: "Usuário não encontrado" });
+                return res.status(401).json({ message: 'Erro ao realizar login', error: "Usuário não encontrado" });
             }
 
             const hash = usuario.senha ?? "";
             const senhaCorreta = await criptografia.verificarSenha(senha, hash)
             if (!senhaCorreta) {
-                return res.status(401).json({ message: "Credenciais inválidas" });
+                return res.status(401).json({ message: 'Erro ao realizar login', error: "Credenciais inválidas" });
             }
 
             const token = generateToken(usuario.id, usuario.email)
@@ -58,7 +58,7 @@ class AuthController {
             });
 
         } catch (error: any) {
-            return res.status(500).json({ message: "Erro no servidor", error: error.message });
+            return res.status(500).json({ message: 'Erro ao realizar login', error: error.message });
         }
     }
 
@@ -67,7 +67,7 @@ class AuthController {
             const { refreshToken } = req.body;
 
             if (!refreshToken) {
-                return res.status(401).json({ message: 'Refresh token não fornecido' });
+                return res.status(401).json({ message: 'Erro ao atualizar token', error: 'Refresh token não fornecido' });
             }
 
             const decoded = jwt.verify(refreshToken, REFRESH_SECRET) as { userId: Types.ObjectId, email: string };
