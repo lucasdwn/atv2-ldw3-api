@@ -1,10 +1,9 @@
 import { Request, Response } from "express";
 import Usuario from "../models/usuarioModel";
-import { personalizacaoPredefinida } from "../interfaces/IPersonalizacao";
 import dateService from "../utils/dateService";
 import TipoLista from "../models/tipoListaModel";
 import Lista from "../models/listaModel";
-
+import { getPersonalizacaoAleatoria } from "../utils/personalizacao";
 
 class tipoListaController {
 
@@ -24,7 +23,7 @@ class tipoListaController {
                 return res.status(404).json({ message: 'Usuário não encontrado' });
             }
 
-            const personalizacaoTipoLista = personalizacao ? personalizacao : personalizacaoPredefinida;
+            const personalizacaoTipoLista = personalizacao ? personalizacao : getPersonalizacaoAleatoria();
 
             const novoTipoLista = new TipoLista({
                 usuarioId: userId,
@@ -58,9 +57,9 @@ class tipoListaController {
     public async listTipoListas(req: Request, res: Response): Promise<Response> {
         try {
             const { userId } = req.body;
+            const { search, limit = 10 } = req.query;
 
             const usuario = await Usuario.findById(userId);
-
             if (!usuario) {
                 return res.status(404).json({ message: 'Usuário não encontrado' });
             }
@@ -69,8 +68,9 @@ class tipoListaController {
                 $or: [
                     { usuarioId: userId },
                     { usuarioId: 'admin' }
-                ]
-            });
+                ],
+                ...(search ? { nome: { $regex: search, $options: 'i' } } : {})
+            }).limit(Number(limit));
 
             const tiposListaTransformadas = tiposLista.map((tipoLista) => {
                 const tipoListaObj = tipoLista.toObject({
@@ -88,7 +88,8 @@ class tipoListaController {
         } catch (error: any) {
             return res.status(500).json({ message: 'Erro ao listar Tipos de lista', error: error.message });
         }
-    };
+    }
+
 
     public async updateTipoLista(req: Request, res: Response): Promise<Response> {
 
