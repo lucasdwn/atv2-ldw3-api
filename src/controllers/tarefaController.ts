@@ -346,7 +346,7 @@ class tarefaClass {
 
             const lista = await Lista.findById(listaId)
             if (!lista) {
-                return res.status(404).json({ message: 'Erro ao deletar tarefa', error: 'Lista não encontrada' });
+                return res.status(404).json({ message: 'Erro ao atualizar ordenação', error: 'Lista não encontrada' });
             }
 
             const usuariosComPermissaoDeEdicao = lista.usuariosPermitidos
@@ -367,6 +367,66 @@ class tarefaClass {
         }
         catch (error: any) {
             return res.status(500).json({ message: 'Erro ao atualizar ordenação', error: error.message });
+        }
+    };
+
+    public async atualizarRealizadoEm(req: Request, res: Response): Promise<Response> {
+
+        try {
+            const { listaId } = req.query;
+            const { userId, realizadaoEmAtualizado } = req.body;
+
+            const usuario = await Usuario.findById(userId);
+
+            const tarefa = await Tarefa.findById(realizadaoEmAtualizado.id);
+            if (!tarefa) {
+                return res.status(404).json({ message: 'Erro ao atualizar tarefa', error: 'Tarefa não encontrada' });
+            }
+
+            if (!usuario) {
+                return res.status(404).json({ message: 'Erro ao atualizar status da tarefa', error: 'Usuário não encontrado' });
+            }
+
+            const lista = await Lista.findById(listaId)
+            if (!lista) {
+                return res.status(404).json({ message: 'Erro ao atualizar status da tarefa', error: 'Lista não encontrada' });
+            }
+
+            const usuariosComPermissaoDeEdicao = lista.usuariosPermitidos
+                .filter(usuario => usuario.podeEditar === true)
+                .map(usuario => usuario.usuarioId);
+
+
+            if (lista.usuarioId !== userId && !usuariosComPermissaoDeEdicao.includes(userId)) {
+                return res.status(404).json({ message: 'Erro ao atualizar tarefa', error: 'Você não possuí permissão para atualizar atualizar status dessa tarefa.' });
+            }
+
+
+            if (realizadaoEmAtualizado) {
+
+                tarefa.realizadoEm = realizadaoEmAtualizado.realizadoEm;
+
+                if (tarefa.realizadoEm !== null) {
+                    tarefa.status = StatusEnum.Concluida;
+                }
+                else {
+                    const dataDeVencimento = dateService.getDataSemHoras(new Date(tarefa.dataDeVencimento));
+                    const dataAtual = dateService.getDataSemHoras(dateService.getServiceDate());
+
+                    if (dataDeVencimento.getTime() < dataAtual.getTime()) {
+                        tarefa.status = StatusEnum.Atrasada;
+                    } else {
+                        tarefa.status = StatusEnum.Pendente;
+                    }
+                }
+            };
+
+            await tarefa.save();
+
+            return res.status(200).json({ message: 'Status da tarefa atualizada com sucesso' });
+        }
+        catch (error: any) {
+            return res.status(500).json({ message: 'Erro ao atualizar status da tarefa', error: error.message });
         }
     };
 };
