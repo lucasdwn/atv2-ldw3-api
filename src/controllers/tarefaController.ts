@@ -10,7 +10,7 @@ class tarefaClass {
 
     public async createTarefa(req: Request, res: Response): Promise<Response> {
         try {
-            const { userId, listaId, titulo, prioridadeId, dataDeVencimento, descricao, subTarefas, anexos } = req.body;
+            const { userId, listaId, titulo, prioridadeId, dataDeVencimento, descricao, subTarefas, anexos, status } = req.body;
 
             const usuario = await Usuario.findById(userId);
             if (!usuario) {
@@ -57,7 +57,7 @@ class tarefaClass {
                 listaId,
                 titulo,
                 prioridadeId,
-                status: StatusEnum.Pendente,
+                status: status || StatusEnum.Pendente,
                 dataDeVencimento,
                 criadoEm: await dateService.getServiceDate()
             });
@@ -203,11 +203,13 @@ class tarefaClass {
                 return res.status(404).json({ message: 'Erro ao buscar tarefas', error: 'Você não possuí permissão para visualizar tarefas dessa lista.' });
             }
 
-            const tarefas = await Tarefa.find({ listaId: listaId }).populate({
-                path: 'prioridadeId',
-                model: 'Prioridade',
-                select: 'nome usuarioId personalizacao'
-            });
+            const tarefas = await Tarefa.find({ listaId: listaId })
+                .sort({ ordenacao: 1 })
+                .populate({
+                    path: 'prioridadeId',
+                    model: 'Prioridade',
+                    select: 'nome usuarioId personalizacao'
+                });
 
             const tarefasTransformadas = tarefas.map((tarefa) => {
                 const tarefaObj = tarefa.toObject({
@@ -328,6 +330,44 @@ class tarefaClass {
         }
         catch (error: any) {
             return res.status(500).json({ message: 'Erro ao deletar tarefa', error: error.message });
+        }
+    };
+
+    public async atualizarOrdenacao(req: Request, res: Response): Promise<Response> {
+
+        try {
+            const { listaId } = req.query;
+            const { userId, ordensAtualizadas } = req.body;
+
+            const usuario = await Usuario.findById(userId);
+
+            if (!usuario) {
+                return res.status(404).json({ message: 'Erro ao atualizar ordenação', error: 'Usuário não encontrado' });
+            }
+
+            const lista = await Lista.findById(listaId)
+            if (!lista) {
+                return res.status(404).json({ message: 'Erro ao deletar tarefa', error: 'Lista não encontrada' });
+            }
+
+            const usuariosComPermissaoDeEdicao = lista.usuariosPermitidos
+                .filter(usuario => usuario.podeEditar === true)
+                .map(usuario => usuario.usuarioId);
+
+            if (lista.usuarioId !== userId && !usuariosComPermissaoDeEdicao.includes(userId)) {
+                return res.status(404).json({ message: 'Erro ao atualizar ordenação', error: 'Você não possuí permissão para atualizar ordenação de tarefas dessa lista.' });
+            }
+
+            await Promise.all(
+                ordensAtualizadas.map(async (ordem: { id: string; ordenacao: number }) => {
+                    return Tarefa.findByIdAndUpdate(ordem.id, { ordenacao: ordem.ordenacao }, { new: true });
+                })
+            );
+
+            return res.status(200).json({ message: 'Ordenação atualizada com sucesso' });
+        }
+        catch (error: any) {
+            return res.status(500).json({ message: 'Erro ao atualizar ordenação', error: error.message });
         }
     };
 };
