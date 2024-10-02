@@ -3,6 +3,7 @@ import Usuario from "../models/usuarioModel";
 import Lista from "../models/listaModel";
 import dateService from "../utils/dateService";
 import { getPersonalizacaoAleatoria } from "../utils/personalizacao";
+import { IUsuarioPermitido } from "../interfaces/IUsuario";
 
 class listaClass {
     public async createLista(req: Request, res: Response): Promise<Response> {
@@ -34,7 +35,43 @@ class listaClass {
             });
 
             if (usuariosPermitidos) {
-                novaLista.usuariosPermitidos = usuariosPermitidos;
+                const emails = usuariosPermitidos.map((u: any) => u.email.toLowerCase());
+
+                if (emails.includes(usuario.email.toLowerCase())) {
+                    return res.status(400).json({
+                        message: 'Erro ao atualizar lista',
+                        error: 'Você não pode compartilhar a lista com você mesmo'
+                    });
+                }
+
+                const usuariosEncontrados = await Usuario.find({
+                    email: { $in: emails },
+                    _id: { $ne: userId }
+                });
+
+                const emailsEncontrados = usuariosEncontrados.map(usuario => usuario.email);
+
+                const emailsNaoEncontrados = emails.filter((email: string) => !emailsEncontrados.includes(email));
+
+                if (emailsNaoEncontrados.length > 0) {
+                    return res.status(400).json({
+                        message: 'Erro ao atualizar lista',
+                        error: "Adicione apenas e-mails de usuários que possuem cadastro na aplicação"
+                    });
+                }
+
+                const usuariosPermitidosObj: IUsuarioPermitido[] = usuariosEncontrados.map(usuarioObj => {
+                    const usuarioPermitido = usuariosPermitidos.find((u: any) => u.email === usuarioObj.email);
+                    return {
+                        usuarioId: usuarioObj.id.toString(),
+                        email: usuarioObj.email,
+                        podeEditar: usuarioPermitido.podeEditar,
+                        criadoEm: usuarioObj.criadoEm,
+                        atualizadoEm: usuarioObj.atualizadoEm,
+                    };
+                });
+
+                novaLista.usuariosPermitidos = usuariosPermitidosObj;
             }
 
             const listaSalva = await novaLista.save();
@@ -44,6 +81,9 @@ class listaClass {
                 transform: (doc, ret) => {
                     ret.id = ret._id;
                     delete ret._id;
+                    if (Array.isArray(ret.usuariosPermitidos)) {
+                        ret.usuariosPermitidos = ret.usuariosPermitidos.map(({ usuarioId, ...rest }: { usuarioId: string }) => rest);
+                    }
                     return ret;
                 }
             });
@@ -90,6 +130,9 @@ class listaClass {
                     transform: (doc, ret) => {
                         ret.id = ret._id;
                         delete ret._id;
+                        if (Array.isArray(ret.usuariosPermitidos)) {
+                            ret.usuariosPermitidos = ret.usuariosPermitidos.map(({ usuarioId, ...rest }: { usuarioId: string }) => rest);
+                        }
                         return ret;
                     }
                 });
@@ -139,6 +182,9 @@ class listaClass {
                     transform: (doc, ret) => {
                         ret.id = ret._id;
                         delete ret._id;
+                        if (Array.isArray(ret.usuariosPermitidos)) {
+                            ret.usuariosPermitidos = ret.usuariosPermitidos.map(({ usuarioId, ...rest }: { usuarioId: string }) => rest);
+                        }
                         return ret;
                     }
                 });
@@ -187,8 +233,48 @@ class listaClass {
             lista.atualizadoEm = await dateService.getServiceDate();
             lista.tipoListaId = tipoListaId || lista.tipoListaId;
 
-            if (lista.usuarioId === userId) {
-                lista.usuariosPermitidos = usuariosPermitidos || lista.usuariosPermitidos
+            if (lista.usuarioId !== userId) {
+                return res.status(404).json({ message: 'Erro ao atualizar lista', error: 'Usuario não possuí permissão para editar usuarios permitidos.' });
+            }
+
+            if (usuariosPermitidos) {
+                const emails = usuariosPermitidos.map((u: any) => u.email.toLowerCase());
+
+                if (emails.includes(usuario.email.toLowerCase())) {
+                    return res.status(400).json({
+                        message: 'Erro ao atualizar lista',
+                        error: 'Você não pode compartilhar a lista com você mesmo'
+                    });
+                }
+
+                const usuariosEncontrados = await Usuario.find({
+                    email: { $in: emails },
+                    _id: { $ne: userId }
+                });
+
+                const emailsEncontrados = usuariosEncontrados.map(usuario => usuario.email);
+
+                const emailsNaoEncontrados = emails.filter((email: string) => !emailsEncontrados.includes(email));
+
+                if (emailsNaoEncontrados.length > 0) {
+                    return res.status(400).json({
+                        message: 'Erro ao atualizar lista',
+                        error: "Adicione apenas e-mails de usuários que possuem cadastro na aplicação"
+                    });
+                }
+
+                const usuariosPermitidosObj: IUsuarioPermitido[] = usuariosEncontrados.map(usuarioObj => {
+                    const usuarioPermitido = usuariosPermitidos.find((u: any) => u.email === usuarioObj.email);
+                    return {
+                        usuarioId: usuarioObj.id.toString(),
+                        email: usuarioObj.email,
+                        podeEditar: usuarioPermitido.podeEditar,
+                        criadoEm: usuarioObj.criadoEm,
+                        atualizadoEm: usuarioObj.atualizadoEm,
+                    };
+                });
+
+                lista.usuariosPermitidos = usuariosPermitidosObj || lista.usuariosPermitidos;
             }
 
             await lista.save();
@@ -199,6 +285,9 @@ class listaClass {
                 transform: (doc, ret) => {
                     ret.id = ret._id;
                     delete ret._id;
+                    if (Array.isArray(ret.usuariosPermitidos)) {
+                        ret.usuariosPermitidos = ret.usuariosPermitidos.map(({ usuarioId, ...rest }: { usuarioId: string }) => rest);
+                    }
                     return ret;
                 }
             });
@@ -262,7 +351,6 @@ class listaClass {
             }
 
             const usuariosComPermissaoDeEdicao = lista.usuariosPermitidos
-                .filter(usuario => usuario.podeEditar === true)
                 .map(usuario => usuario.usuarioId);
 
             if (lista.usuarioId !== userId && !usuariosComPermissaoDeEdicao.includes(userId)) {
@@ -274,6 +362,9 @@ class listaClass {
                 transform: (doc, ret) => {
                     ret.id = ret._id;
                     delete ret._id;
+                    if (Array.isArray(ret.usuariosPermitidos)) {
+                        ret.usuariosPermitidos = ret.usuariosPermitidos.map(({ usuarioId, ...rest }: { usuarioId: string }) => rest);
+                    }
                     return ret;
                 }
             });

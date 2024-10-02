@@ -30,6 +30,7 @@ usuarioSchema.method('toJSON', function () {
 
 export const UsuarioPermitidoSchema = new Schema<IUsuarioPermitidoModal>({
     usuarioId: { type: String, required: true },
+    email: { type: String, required: true },
     podeEditar: { type: Boolean, required: true },
     criadoEm: { type: Date, default: Date.now },
     atualizadoEm: { type: Date },
