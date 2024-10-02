@@ -4,6 +4,7 @@ import Lista from "../models/listaModel";
 import dateService from "../utils/dateService";
 import { getPersonalizacaoAleatoria } from "../utils/personalizacao";
 import { IUsuarioPermitido } from "../interfaces/IUsuario";
+import { IListaModal } from "../interfaces/ILista";
 
 class listaClass {
     public async createLista(req: Request, res: Response): Promise<Response> {
@@ -233,11 +234,12 @@ class listaClass {
             lista.atualizadoEm = await dateService.getServiceDate();
             lista.tipoListaId = tipoListaId || lista.tipoListaId;
 
-            if (lista.usuarioId !== userId) {
-                return res.status(404).json({ message: 'Erro ao atualizar lista', error: 'Usuario não possuí permissão para editar usuarios permitidos.' });
-            }
-
             if (usuariosPermitidos) {
+
+                if (lista.usuarioId !== userId) {
+                    return res.status(404).json({ message: 'Erro ao atualizar lista', error: 'Usuario não possuí permissão para editar usuarios permitidos.' });
+                }
+
                 const emails = usuariosPermitidos.map((u: any) => u.email.toLowerCase());
 
                 if (emails.includes(usuario.email.toLowerCase())) {
@@ -344,7 +346,12 @@ class listaClass {
                 return res.status(404).json({ message: 'Erro ao buscar lista', error: 'Usuário não encontrado' });
             }
 
-            const lista = await Lista.findById(listaId);
+            const lista = await Lista.findById(listaId)
+                .populate({
+                    path: 'tipoListaId',
+                    model: 'TipoLista',
+                    select: 'nome usuarioId personalizacao'
+                });
 
             if (!lista) {
                 return res.status(404).json({ message: 'Erro ao buscar lista', error: 'Lista não encontrada' });
@@ -367,7 +374,11 @@ class listaClass {
                     }
                     return ret;
                 }
-            });
+            }) as IListaModal & { isEditUsuarios?: boolean }
+
+            if (lista.usuarioId === userId) {
+                listaObj.isEditUsuarios = true;
+            }
 
             return res.status(200).json(listaObj);
         } catch (error: any) {
