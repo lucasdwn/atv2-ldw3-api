@@ -357,10 +357,10 @@ class listaClass {
                 return res.status(404).json({ message: 'Erro ao buscar lista', error: 'Lista não encontrada' });
             }
 
-            const usuariosComPermissaoDeEdicao = lista.usuariosPermitidos
+            const usuariosPermitidos = lista.usuariosPermitidos
                 .map(usuario => usuario.usuarioId);
 
-            if (lista.usuarioId !== userId && !usuariosComPermissaoDeEdicao.includes(userId)) {
+            if (lista.usuarioId !== userId && !usuariosPermitidos.includes(userId)) {
                 return res.status(404).json({ message: 'Erro ao buscar lista', error: 'Você não possuí permissão para visualizar essa lista.' });
             }
 
@@ -374,10 +374,18 @@ class listaClass {
                     }
                     return ret;
                 }
-            }) as IListaModal & { isEditUsuarios?: boolean }
+            }) as IListaModal & { isEditUsuarios?: boolean, isPermitidoEditar?: boolean }
 
             if (lista.usuarioId === userId) {
                 listaObj.isEditUsuarios = true;
+            }
+
+            const usuariosComPermissaoDeEdicao = lista.usuariosPermitidos
+                .filter(usuario => usuario.podeEditar === true)
+                .map(usuario => usuario.usuarioId);
+
+            if (lista.usuarioId === userId || usuariosComPermissaoDeEdicao.includes(userId)) {
+                listaObj.isPermitidoEditar = true;
             }
 
             return res.status(200).json(listaObj);

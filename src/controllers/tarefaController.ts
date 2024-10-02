@@ -195,11 +195,10 @@ class tarefaClass {
                 return res.status(404).json({ message: 'Erro ao buscar tarefas', error: 'Lista não encontrada' });
             };
 
-            const usuariosComPermissaoDeEdicao = lista.usuariosPermitidos
-                .filter(usuario => usuario.podeEditar === true)
+            const usuariosComPermissao = lista.usuariosPermitidos
                 .map(usuario => usuario.usuarioId);
 
-            if (lista.usuarioId !== userId && !usuariosComPermissaoDeEdicao.includes(userId)) {
+            if (lista.usuarioId !== userId && !usuariosComPermissao.includes(userId)) {
                 return res.status(404).json({ message: 'Erro ao buscar tarefas', error: 'Você não possuí permissão para visualizar tarefas dessa lista.' });
             }
 
