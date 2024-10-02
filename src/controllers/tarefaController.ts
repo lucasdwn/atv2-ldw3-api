@@ -297,7 +297,8 @@ class tarefaClass {
 
         try {
             const { tarefaId } = req.params;
-            const { userId, listaId } = req.body;
+            const { listaId } = req.query;
+            const { userId } = req.body;
 
             const usuario = await Usuario.findById(userId);
 
