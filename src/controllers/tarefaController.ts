@@ -10,7 +10,8 @@ class tarefaClass {
 
     public async createTarefa(req: Request, res: Response): Promise<Response> {
         try {
-            const { userId, listaId, titulo, prioridadeId, dataDeVencimento, descricao, subTarefas, anexos, status } = req.body;
+            const { listaId } = req.query;
+            const { userId, titulo, prioridadeId, dataDeVencimento, descricao, subTarefas, anexos, status } = req.body;
 
             const usuario = await Usuario.findById(userId);
             if (!usuario) {
@@ -98,8 +99,9 @@ class tarefaClass {
 
     public async updateTarefa(req: Request, res: Response): Promise<Response> {
         try {
-            const { tarefaId } = req.params
-            const { userId, listaId, titulo, prioridadeId, dataDeVencimento, realizadoEm, descricao, subTarefas, anexos } = req.body;
+            const { tarefaId } = req.params;
+            const { listaId } = req.query;
+            const { userId, titulo, prioridadeId, dataDeVencimento, realizadoEm, descricao, subTarefas, anexos } = req.body;
 
             const tarefa = await Tarefa.findById(tarefaId);
             if (!tarefa) {
