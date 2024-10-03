@@ -58,6 +58,7 @@ class prioridadeController {
     public async listPrioridades(req: Request, res: Response): Promise<Response> {
         try {
             const { userId } = req.body;
+            const { search, limit = 10 } = req.query;
 
             const usuario = await Usuario.findById(userId);
 
@@ -69,8 +70,9 @@ class prioridadeController {
                 $or: [
                     { usuarioId: userId },
                     { usuarioId: 'admin' }
-                ]
-            });
+                ],
+                ...(search ? { nome: { $regex: search, $options: 'i' } } : {})
+            }).limit(Number(limit));
 
             const prioridadesTransformadas = prioridades.map((prioridade) => {
                 const prioridadesObj = prioridade.toObject({
