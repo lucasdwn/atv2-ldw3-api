@@ -183,7 +183,7 @@ class tarefaClass {
     public async buscarTarefas(req: Request, res: Response): Promise<Response> {
         try {
             const { userId } = req.body;
-            const { listaId } = req.query;
+            const { listaId, search, prioridadeId } = req.query;
 
             const usuario = await Usuario.findById(userId);
 
@@ -208,7 +208,20 @@ class tarefaClass {
                 return res.status(404).json({ message: 'Erro ao buscar tarefas', error: 'Você não possuí permissão para visualizar tarefas dessa lista.' });
             }
 
-            const tarefas = await Tarefa.find({ listaId: listaId })
+
+            const filtro: any = {
+                listaId: listaId
+            };
+
+            if (search) {
+                filtro.titulo = { $regex: search, $options: 'i' };
+            };
+
+            if (prioridadeId && prioridadeId !== '') {
+                filtro.prioridadeId = { $regex: prioridadeId, $options: 'i' };
+            };
+
+            const tarefas = await Tarefa.find(filtro)
                 .sort({ ordenacao: 1 })
                 .populate({
                     path: 'prioridadeId',
