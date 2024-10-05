@@ -57,20 +57,34 @@ class tipoListaController {
     public async listTipoListas(req: Request, res: Response): Promise<Response> {
         try {
             const { userId } = req.body;
-            const { search, limit = 10 } = req.query;
+            const { search, limit = 10, listaId } = req.query;
 
             const usuario = await Usuario.findById(userId);
             if (!usuario) {
                 return res.status(404).json({ message: 'Erro ao listar Tipos de lista', error: 'Usuário não encontrado' });
             }
 
-            const tiposLista = await TipoLista.find({
+            const filtro: any = {
                 $or: [
                     { usuarioId: userId },
                     { usuarioId: 'admin' }
                 ],
-                ...(search ? { nome: { $regex: search, $options: 'i' } } : {})
-            }).limit(Number(limit));
+            };
+
+            if (search) {
+                filtro.nome = { $regex: search, $options: 'i' };
+            }
+
+            if (listaId && listaId !== '') {
+                const lista = await Lista.findById(listaId)
+
+                if (lista) {
+                    const tipoListaId = lista.tipoListaId;
+                    filtro.$or.push({ _id: tipoListaId });
+                }
+            }
+            
+            const tiposLista = await TipoLista.find(filtro).limit(Number(limit));
 
             const tiposListaTransformadas = tiposLista.map((tipoLista) => {
                 const tipoListaObj = tipoLista.toObject({

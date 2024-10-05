@@ -58,7 +58,7 @@ class prioridadeController {
     public async listPrioridades(req: Request, res: Response): Promise<Response> {
         try {
             const { userId } = req.body;
-            const { search, limit = 10 } = req.query;
+            const { search, limit = 10, tarefaId } = req.query;
 
             const usuario = await Usuario.findById(userId);
 
@@ -66,13 +66,28 @@ class prioridadeController {
                 return res.status(404).json({ message: 'Erro ao listar prioridades', error: 'Usuário não encontrado' });
             }
 
-            const prioridades = await Prioridade.find({
+
+            const filtro: any = {
                 $or: [
                     { usuarioId: userId },
                     { usuarioId: 'admin' }
                 ],
-                ...(search ? { nome: { $regex: search, $options: 'i' } } : {})
-            }).limit(Number(limit));
+            };
+
+            if (search) {
+                filtro.nome = { $regex: search, $options: 'i' };
+            }
+
+            if (tarefaId && tarefaId !== '') {
+                const tarefa = await Tarefa.findById(tarefaId)
+
+                if (tarefa) {
+                    const prioridadeId = tarefa.prioridadeId;
+                    filtro.$or.push({ _id: prioridadeId });
+                }
+            }
+
+            const prioridades =  await Prioridade.find(filtro).limit(Number(limit));
 
             const prioridadesTransformadas = prioridades.map((prioridade) => {
                 const prioridadesObj = prioridade.toObject({
