@@ -103,7 +103,7 @@ class listaClass {
     public async buscarListasUser(req: Request, res: Response): Promise<Response> {
         try {
             const { userId } = req.body;
-            const { page = 1, limit = 10 } = req.query;
+            const { page = 1, limit = 10, search, tipoListaId } = req.query;
 
             const usuario = await Usuario.findById(userId);
 
@@ -113,7 +113,18 @@ class listaClass {
 
             const skip = (Number(page) - 1) * Number(limit);
 
-            const listas = await Lista.find({ usuarioId: userId })
+            const filtro: any = {
+                usuarioId: userId
+            };
+
+            if (search) {
+                filtro.nome = { $regex: search, $options: 'i' };
+            }
+            if (tipoListaId && tipoListaId !== '') {
+                filtro.tipoListaId = { $regex: tipoListaId, $options: 'i' };
+            }
+
+            const listas = await Lista.find(filtro)
                 .populate({
                     path: 'tipoListaId',
                     model: 'TipoLista',
@@ -123,7 +134,7 @@ class listaClass {
                 .skip(skip)
                 .limit(Number(limit));
 
-            const totalListas = await Lista.countDocuments({ usuarioId: userId });
+            const totalListas = await Lista.countDocuments(filtro);
 
             const listasTransformadas = listas.map((lista) => {
                 const listasObj = lista.toObject({
