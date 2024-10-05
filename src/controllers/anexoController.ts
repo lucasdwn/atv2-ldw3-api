@@ -4,6 +4,7 @@ import { IAnexo, IUpload } from "../interfaces/IAnexo";
 import Usuario from "../models/usuarioModel";
 import Anexo from "../models/anexoModel";
 import dateService from "../utils/dateService";
+import Tarefa from "../models/tarefaModel";
 
 class anexoClass {
 
@@ -32,30 +33,43 @@ class anexoClass {
 
         } catch (error: any) {
             console.log(error.message)
-            return res.status(500).json({ message: 'Erro ao realizar upload', error: 'Erro ao carregar imagem'})
+            return res.status(500).json({ message: 'Erro ao realizar upload', error: 'Erro ao carregar imagem' })
         }
     }
 
-    public async uploadDocumento(req: Request, res: Response): Promise<Response> {
+    public async uploadDocumentos(req: Request, res: Response): Promise<Response> {
         try {
-
             const { userId, tarefaId } = req.body;
 
-            if (!req.file) {
-                return res.status(400).json({ message: 'Erro ao realizar upload', error: 'Nenhum documento enviado' });
+            if (!req.files || (req.files as Express.Multer.File[]).length === 0) {
+                return res.status(400).json({ message: 'Erro ao realizar upload(s)', error: 'Nenhum documento enviado' });
             }
 
-            const documentoUpload: IUpload = await uploadToS3(req.file, 'documents');
+            const files = req.files as Express.Multer.File[];
 
-            const anexo = await createAnexo(documentoUpload, userId, tarefaId);
+            const anexos = await Promise.all(
+                files.map(async (file) => {
+                    const documentoUpload: IUpload = await uploadToS3(file, 'documents');
+                    const anexo = await createAnexo(documentoUpload, userId, tarefaId);
+                    return anexo;
+                })
+            );
+
+            const tarefa = await Tarefa.findById(tarefaId);
+
+            if (tarefa) {
+                tarefa.anexos = [...tarefa.anexos, ...anexos];
+
+                tarefa.save();
+            }
 
             return res.status(201).json({
-                message: "Upload realizado com sucesso",
-                anexo: anexo
+                message: "Upload(s) realizado(s) com sucesso",
+                anexos: anexos
             });
 
         } catch (error: any) {
-            return res.status(500).json({ message: 'Erro ao carregar documento', error: error.message })
+            return res.status(500).json({ message: 'Erro ao carregar documentos', error: error.message });
         }
     }
 };

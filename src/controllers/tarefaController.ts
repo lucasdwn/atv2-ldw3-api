@@ -137,9 +137,12 @@ class tarefaClass {
             tarefa.prioridadeId = prioridadeId || tarefa.prioridadeId;
             tarefa.dataDeVencimento = dataDeVencimento || tarefa.dataDeVencimento;
             tarefa.subTarefas = subTarefas || tarefa.subTarefas;
-            tarefa.anexos = anexos || tarefa.anexos;
             tarefa.atualizadoEm = await dateService.getServiceDate();
             tarefa.realizadoEm = realizadoEm || tarefa.realizadoEm;
+
+            if (anexos) {
+                tarefa.anexos = anexos;
+            }
 
             if (tarefa.realizadoEm) {
                 tarefa.status = StatusEnum.Concluida;

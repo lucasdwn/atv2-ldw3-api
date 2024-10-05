@@ -22,7 +22,11 @@ const documentFileFilter = (req: Request, file: Express.Multer.File, cb: multer.
         'application/zip',
         'application/x-zip-compressed',
         'application/x-rar-compressed',
-        'application/vnd.rar'
+        'application/vnd.rar',
+        'image/jpeg', 
+        'image/jpg', 
+        'image/png', 
+        'image/gif'
     ];
 
     if (allowedTypes.includes(file.mimetype)) {
@@ -52,7 +56,7 @@ const optimizeImage = async (fileBuffer: Buffer) => {
         .toBuffer();
 };
 
-const preserveBody = (type: 'image' | 'document') => {
+const preserveBody = (type: 'image' | 'documents') => {
     return async (req: Request, res: Response, next: NextFunction) => {
         const originalBody = { ...req.body };
 
@@ -69,8 +73,8 @@ const preserveBody = (type: 'image' | 'document') => {
                 req.body = { ...originalBody, ...req.body };
                 next();
             });
-        } else if (type === 'document') {
-            documentUpload.single('document')(req, res, async (err: any) => {
+        } else if (type === 'documents') {
+            documentUpload.array('documents')(req, res, async (err: any) => {
                 if (err) {
                     return res.status(400).json({ message: 'Erro ao realizar upload', error: err.message });
                 }
