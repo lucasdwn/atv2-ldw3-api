@@ -68,12 +68,18 @@ class prioridadeController {
 
             const skip = (Number(page) - 1) * Number(limit);
 
-            const prioridades = await Prioridade.find({
+            const filtro: any = {
                 $or: [
                     { usuarioId: userId },
                     { usuarioId: 'admin' }
-                ],
-            })
+                ]
+            };
+
+            if (search) {
+                filtro.nome = { $regex: search, $options: 'i' };
+            }
+
+            const prioridades = await Prioridade.find(filtro)
                 .sort({ criadoEm: -1 })
                 .skip(skip)
                 .limit(Number(limit));

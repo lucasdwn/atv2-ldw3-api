@@ -67,12 +67,18 @@ class tipoListaController {
 
             const skip = (Number(page) - 1) * Number(limit);
 
-            const tiposLista = await TipoLista.find({
+            const filtro: any = {
                 $or: [
                     { usuarioId: userId },
                     { usuarioId: 'admin' }
-                ],
-            })
+                ]
+            };
+
+            if (search) {
+                filtro.nome = { $regex: search, $options: 'i' };
+            }
+
+            const tiposLista = await TipoLista.find(filtro)
                 .sort({ criadoEm: -1 })
                 .skip(skip)
                 .limit(Number(limit));
