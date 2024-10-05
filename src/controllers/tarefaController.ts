@@ -5,6 +5,7 @@ import Prioridade from "../models/prioridadeModel";
 import { StatusEnum } from "../enums/tarefasEnum";
 import dateService from "../utils/dateService";
 import Lista from "../models/listaModel";
+import { ITarefaModal } from "../interfaces/ITarefa";
 
 class tarefaClass {
 
@@ -259,11 +260,10 @@ class tarefaClass {
                 return res.status(404).json({ message: 'Erro ao buscar tarefa', error: 'Lista não encontrada' });
             };
 
-            const usuariosComPermissaoDeEdicao = lista.usuariosPermitidos
-                .filter(usuario => usuario.podeEditar === true)
+            const usuariosComPermissao = lista.usuariosPermitidos
                 .map(usuario => usuario.usuarioId);
 
-            if (lista.usuarioId !== userId && !usuariosComPermissaoDeEdicao.includes(userId)) {
+            if (lista.usuarioId !== userId && !usuariosComPermissao.includes(userId)) {
                 return res.status(404).json({ message: 'Erro ao buscar tarefa', error: 'Você não possuí permissão para visualizar tarefas dessa lista.' });
             }
 
@@ -290,7 +290,15 @@ class tarefaClass {
                     delete ret._id;
                     return ret;
                 }
-            });
+            }) as ITarefaModal & { isPermitidoEditar?: boolean }
+
+            const usuariosComPermissaoEdicao = lista.usuariosPermitidos
+                .filter(usuario => usuario.podeEditar === true)
+                .map(usuario => usuario.usuarioId);
+
+            if (lista.usuarioId === userId || usuariosComPermissaoEdicao.includes(userId)) {
+                tarefaObj.isPermitidoEditar = true;
+            }
 
             return res.status(200).json(tarefaObj);
         } catch (error: any) {
