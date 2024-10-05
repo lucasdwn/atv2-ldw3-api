@@ -54,6 +54,59 @@ class tipoListaController {
         }
     };
 
+    public async listAllTiposLista(req: Request, res: Response): Promise<Response> {
+        try {
+            const { userId } = req.body;
+            const { page = 1, limit = 10, search } = req.query;
+
+            const usuario = await Usuario.findById(userId);
+
+            if (!usuario) {
+                return res.status(404).json({ message: 'Erro ao listar Tipos de lista', error: 'Usuário não encontrado' });
+            }
+
+            const skip = (Number(page) - 1) * Number(limit);
+
+            const tiposLista = await TipoLista.find({
+                $or: [
+                    { usuarioId: userId },
+                    { usuarioId: 'admin' }
+                ],
+            })
+                .sort({ criadoEm: -1 })
+                .skip(skip)
+                .limit(Number(limit));
+
+            const totalTiposLista = await TipoLista.countDocuments({
+                $or: [
+                    { usuarioId: userId },
+                    { usuarioId: 'admin' }
+                ],
+            });
+
+            const tiposListaTransformadas = tiposLista.map((tipoLista) => {
+                const tipoListasObj = tipoLista.toObject({
+                    versionKey: false,
+                    transform: (doc, ret) => {
+                        ret.id = ret._id;
+                        delete ret._id;
+                        return ret;
+                    }
+                });
+                return tipoListasObj;
+            });
+
+            return res.status(200).json({
+                total: totalTiposLista,
+                page: Number(page),
+                limit: Number(limit),
+                tiposLista: tiposListaTransformadas,
+            });
+        } catch (error: any) {
+            return res.status(500).json({ message: 'Erro ao listar Tipos de lista', error: error.message });
+        }
+    }
+
     public async listTipoListas(req: Request, res: Response): Promise<Response> {
         try {
             const { userId } = req.body;
@@ -83,7 +136,7 @@ class tipoListaController {
                     filtro.$or.push({ _id: tipoListaId });
                 }
             }
-            
+
             const tiposLista = await TipoLista.find(filtro).limit(Number(limit));
 
             const tiposListaTransformadas = tiposLista.map((tipoLista) => {
