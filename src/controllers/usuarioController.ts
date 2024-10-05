@@ -107,7 +107,7 @@ class UsuarioController {
 
             let profileImageUrl: IUpload | undefined;
             if (req.file) {
-                profileImageUrl = await uploadToLocal(req.file, 'profile-images');
+                profileImageUrl = await uploadToS3(req.file, 'profile-images');
                 await createAnexo(profileImageUrl, userId);
             }
 

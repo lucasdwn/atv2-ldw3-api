@@ -12,7 +12,7 @@ import path from 'path';
 
 const routes = Router()
 
-routes.use('/uploads', express.static(path.join(__dirname, '..', 'uploads')));
+// routes.use('/uploads', express.static(path.join(__dirname, '..', 'uploads')));
 routes.use('/tipoLista', authMiddleware, tipoListaRoutes)
 routes.use('/tarefa', authMiddleware, tarefaRoutes)
 routes.use('/lista', authMiddleware, listaRoutes)
