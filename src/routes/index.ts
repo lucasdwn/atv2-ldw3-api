@@ -6,10 +6,13 @@ import authMiddleware from "../middlewares/authMiddleware";
 import prioridadeRoutes from "./prioridadeRoutes";
 import listaRoutes from "./listaRoutes";
 import tarefaRoutes from "./tarefaRoutes";
-import tipoListaRoutes from "./tipoListaRoutes"
+import tipoListaRoutes from "./tipoListaRoutes";
+import express from 'express';
+import path from 'path';
 
 const routes = Router()
 
+routes.use('/uploads', express.static(path.join(__dirname, '..', 'uploads')));
 routes.use('/tipoLista', authMiddleware, tipoListaRoutes)
 routes.use('/tarefa', authMiddleware, tarefaRoutes)
 routes.use('/lista', authMiddleware, listaRoutes)

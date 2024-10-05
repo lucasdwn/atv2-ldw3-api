@@ -5,6 +5,7 @@ import Usuario from "../models/usuarioModel";
 import Anexo from "../models/anexoModel";
 import dateService from "../utils/dateService";
 import Tarefa from "../models/tarefaModel";
+import { uploadToLocal } from "../utils/localUpload";
 
 class anexoClass {
 
@@ -22,7 +23,7 @@ class anexoClass {
                 return res.status(404).json({ message: 'Erro ao realizar upload', error: 'Usuário não encontrado' });
             }
 
-            const imagemUpload: IUpload = await uploadToS3(req.file, 'images');
+            const imagemUpload: IUpload = await uploadToLocal(req.file, 'images');
 
             const anexo = await createAnexo(imagemUpload, userId, tarefaId);
 
@@ -49,7 +50,7 @@ class anexoClass {
 
             const anexos = await Promise.all(
                 files.map(async (file) => {
-                    const documentoUpload: IUpload = await uploadToS3(file, 'documents');
+                    const documentoUpload: IUpload = await uploadToLocal(file, 'documents');
                     const anexo = await createAnexo(documentoUpload, userId, tarefaId);
                     return anexo;
                 })

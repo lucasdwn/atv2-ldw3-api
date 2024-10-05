@@ -6,6 +6,7 @@ import dateService from '../utils/dateService';
 import { uploadToS3 } from '../utils/s3Upload';
 import { IUpload } from '../interfaces/IAnexo';
 import { createAnexo } from './anexoController';
+import { uploadToLocal } from '../utils/localUpload';
 
 class UsuarioController {
 
@@ -106,7 +107,7 @@ class UsuarioController {
 
             let profileImageUrl: IUpload | undefined;
             if (req.file) {
-                profileImageUrl = await uploadToS3(req.file, 'profile-images');
+                profileImageUrl = await uploadToLocal(req.file, 'profile-images');
                 await createAnexo(profileImageUrl, userId);
             }
 
