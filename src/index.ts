@@ -28,7 +28,7 @@ async function startServer() {
         app.use(routes);
 
     } catch (error) {
-        console.error("Erro ao iniciar a aplicação: ", error);
+        console.error("Erro ao iniciar a aplicação:  ", error);
     }
 }
 
